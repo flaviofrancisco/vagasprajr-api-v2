@@ -8,6 +8,7 @@ import (
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -54,6 +55,24 @@ func GetJobs(body JobFilter) (PaginatedResult, error) {
 		andConditions = append(andConditions, bson.M{"$and": conditions})
 	}	
 
+	andConditions = appendCondition(andConditions, "company_name", body.Company)
+	andConditions = appendCondition(andConditions, "location", body.Location)
+	andConditions = appendCondition(andConditions, "salary", body.Salary)
+	andConditions = appendCondition(andConditions, "provider", body.Provider)
+
+	andConditions = appendInCondition(andConditions, "_id", body.Ids)
+	andConditions = appendInCondition(andConditions, "company_name", body.JobFilterOptions.Companies)
+	andConditions = appendInCondition(andConditions, "location", body.JobFilterOptions.Locations)
+	andConditions = appendInCondition(andConditions, "provider", body.JobFilterOptions.Providers)
+	andConditions = appendInCondition(andConditions, "salary", body.JobFilterOptions.Salaries)
+
+	andConditions = append(andConditions, bson.M{"is_approved": true})
+	andConditions = append(andConditions, bson.M{"is_closed": false})
+
+	if body.CreatorId != primitive.NilObjectID {
+		andConditions = append(andConditions, bson.M{"creator": body.CreatorId})
+	}	
+
 	filter["$and"] = andConditions
 
 	page := body.Page
@@ -92,5 +111,20 @@ func GetJobs(body JobFilter) (PaginatedResult, error) {
 		PerPage: perPage,
 		Data:    jobs,
 	}, nil
+}
 
+func appendCondition(andConditions []bson.M, field string, value string) []bson.M {
+    if value != "" {
+        andConditions = append(andConditions, bson.M{field: bson.M{"$regex": value, "$options": "i"}})
+    }
+    return andConditions
+}
+
+func appendInCondition(andConditions []bson.M, field string, values []string) []bson.M {
+    if len(values) > 0 {
+        andConditions = append(andConditions, bson.M{"$and": []bson.M{
+            {field: bson.M{"$in": values}},
+        }})
+    }
+    return andConditions
 }
