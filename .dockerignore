@@ -1,0 +1,46 @@
+# Ignore common editor and IDE files
+.vscode/
+.idea/
+
+# Ignore Go build artifacts
+*.o
+*.a
+*.so
+*.test
+*.prof
+*.out
+*.test
+*.exe
+
+# Ignore version control directories and files
+.git/
+.gitignore
+.svn/
+.hg/
+
+# Ignore Go dependency management files
+vendor/
+
+# Ignore any temporary or build-specific files
+*_test.go
+/tmp/
+/build/
+
+# Ignore any log or data files generated during runtime
+*.log
+*.log.*
+data/
+logs/
+
+# Ignore Docker-related files
+Dockerfile
+.dockerignore
+
+# Ignore documentation files
+*.md
+
+# Ignore any other files or directories you want to exclude
+__debug_bin*
+*.mongodb.js
+.env
+.env.*
