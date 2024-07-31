@@ -32,5 +32,3 @@ func Connect() (*mongo.Client, error) {
 	}
 	return client, nil
 }
-
-go get go.mongodb.org/mongo-driver@v1.16.0
