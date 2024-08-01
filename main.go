@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -24,6 +24,7 @@ func main() {
 
 	server := gin.Default()
 
-	server.POST("/jobs", jobs.GetJobs)	
+	routes.RegisterRoutes(server)
+	
 	server.Run(":8080")
 }
