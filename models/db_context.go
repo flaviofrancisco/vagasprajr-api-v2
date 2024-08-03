@@ -21,14 +21,14 @@ func Connect() (*mongo.Client, error) {
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.Background(), clientOptions)
-	if err != nil {
-		return nil, err
-	}
+    if err != nil {
+        log.Fatal(err)
+    }
 
 	// Check the connection
 	err = client.Ping(context.Background(), nil)
 	if err != nil {
-		return nil, err
+		 log.Fatal(err)
 	}
 	return client, nil
 }

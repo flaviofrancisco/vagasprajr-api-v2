@@ -13,10 +13,11 @@ import (
 func main() {
 
 	err := godotenv.Load()
+
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
+	
 	// print the environment variables
 	fmt.Println("DEBUG_MODE:", os.Getenv("DEBUG_MODE"))
 	fmt.Println("VERSION:", os.Getenv("VERSION"))
