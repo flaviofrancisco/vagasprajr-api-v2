@@ -20,3 +20,17 @@ func GetJobs(context *gin.Context) {
 
 	context.JSON(http.StatusOK, result)
 }
+
+func GetAggregatedJobsValues(context *gin.Context) {
+	var body jobs.JobFilter
+	context.BindJSON(&body)
+
+	result, err := jobs.GetAggregatedJobsValues(body)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, result)
+}

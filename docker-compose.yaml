@@ -1,0 +1,28 @@
+version: '3'
+services:
+  backend:
+    container_name: api
+    build:
+      context: .
+    ports:
+      - 3001
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - ./uploads:/uploads:rw
+      - ./.env:/app/.env:ro
+    env_file:
+      - .env
+    networks:
+      - default
+      - vagasprajr_network
+
+networks:
+  vagasprajr_network:
+    driver: bridge
+    external: true
+
+volumes:
+  uploads:
