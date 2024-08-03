@@ -2,21 +2,57 @@
 
 This documentation has the goal to explain how to use the API and how to run the project locally.
 
+## Requirements
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Node.js](https://nodejs.org/en/download/package-manager)
+- [Go](https://golang.org/)
+- Linux Ubuntu 20.04 LTS or Windows with WSL enabled.
+
+## How to run this project using Docker?
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/flaviofrancisco/vagasprajr-docker-compose.git
+```
+
+and follow the instruction in the README file of the repository.
+
+If everything is ok, you should have the following containers in your Docker Desktop:
+![Docker Desktop](image.png)
+
+Running the following containers:
+
+- vagasprajr-api;
+- vagasprajr-ui and
+- vagasprajr-db
+
+Click on the container `vagasprajr-ui` and access the URL: [http://localhost:3000](http://localhost:3000) to see the project running.
+
+To contribute, you need to Fork this repository and create a Pull Request.
+
+Don't forget to stop the vagasprajr-api to run the project locally.
+
 ## How to run the project locally
 
-To run the project locally, you need to have the following tools installed:
+- Clone this project;
 
-- [Docker](https://www.docker.com/)
-- [Docker Compose](https://docs.docker.com/compose/)
-- [Go](https://golang.org/)
+```bash
+git clone git@github.com:flaviofrancisco/vagasprajr-api-v2.git
+```
 
-- The project [vagasprajr-mongodb](https://github.com/flaviofrancisco/vagasprajr-mongodb) up and running locally.
+- Access the project folder;
 
-### The .env file
+```bash
+cd vagasprajr-api-v2
+```
 
-First of all, you need to create a `.env` file in the root of the project. You can copy the `.env.example` file and change the values if you want.
+- Rename the `.env.example` file to `.env` and set the environment variables;
 
-Remember to use the connection string of the MongoDB database that you have running locally.
+```bash
+cp .env.example .env
+```
 
 ## Install the dependencies
 
