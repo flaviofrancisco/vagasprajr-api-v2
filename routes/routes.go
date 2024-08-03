@@ -29,6 +29,14 @@ func RegisterRoutes(server *gin.Engine) {
         MaxAge:           12 * time.Hour,
     }))	
 
+
+	// Health check
+	server.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+		})
+	})
+
 	// Jobs
 	server.POST("/jobs", jobs.GetJobs)
 	server.POST("/jobs/aggregated-values", jobs.GetAggregatedJobsValues)
