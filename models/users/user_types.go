@@ -4,6 +4,28 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type AuthRequestBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type AuthResponse struct {
+	AccessToken string   `json:"access_token"`
+	Success     bool     `json:"success"`
+	UserInfo    UserInfo `json:"user_info"`
+}
+
+type UserInfo struct {
+	Id              string            `json:"id"`
+	FirstName       string            `json:"first_name"`
+	LastName        string            `json:"last_name"`
+	Email           string            `json:"email"`
+	Links           []UserLink 		  `json:"links"`
+	UserName        string            `json:"user_name"`
+	ProfileImageUrl string            `json:"profile_image_url"`
+	Provider        string            `json:"provider"`
+}
+
 type User struct {
 	Id                   primitive.ObjectID   `bson:"_id" json:"_id"`
 	FirstName            string               `bson:"first_name" json:"first_name"`

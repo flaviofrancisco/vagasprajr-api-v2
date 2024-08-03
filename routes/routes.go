@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/users"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +29,11 @@ func RegisterRoutes(server *gin.Engine) {
         MaxAge:           12 * time.Hour,
     }))	
 
+	// Jobs
 	server.POST("/jobs", jobs.GetJobs)
 	server.POST("/jobs/aggregated-values", jobs.GetAggregatedJobsValues)
+
+	// Users
+	server.POST("/users", users.CreateUser)
+	server.POST("/auth/login", users.Login)	
 }
