@@ -43,4 +43,4 @@ Dockerfile
 __debug_bin*
 *.mongodb.js
 .env
-.env.*
+.env.local
