@@ -3,9 +3,10 @@ package routes
 import (
 	"os"
 	"time"
-
+	
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/users"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -44,5 +45,9 @@ func RegisterRoutes(server *gin.Engine) {
 	// Users
 	server.POST("/users", users.CreateUser)
 	server.POST("/auth/login", users.Login)	
-	server.GET("/users/:id", users.GetUser)
+
+	// server.Group("/users")
+	// server.Use(middlewares.AuthMiddleware())
+
+	server.GET("/users/:id", middlewares.AuthMiddleware(), users.GetUser)
 }

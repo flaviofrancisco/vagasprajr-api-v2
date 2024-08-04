@@ -50,7 +50,7 @@ func (tk *Token) GetRefreshToken(token string, expiration time.Time) (string, er
 
 	claim = t.Claims.(jwt.MapClaims)
 
-	userInfo := getUserInfoFromClaims(claim)
+	userInfo := GetUserInfoFromClaims(claim)
 
 	if time.Now().Unix() > int64(claim["exp"].(float64)) {
 		return "", errors.New(`{"error": "Token expired"}`)
@@ -137,7 +137,7 @@ func ValidateToken(context *gin.Context) (users.UserInfo, error) {
 
 	claim = t.Claims.(jwt.MapClaims)
 
-	userInfo := getUserInfoFromClaims(claim)
+	userInfo := GetUserInfoFromClaims(claim)
 
 	if time.Now().Unix() > int64(claim["exp"].(float64)) {
 		return users.UserInfo{}, errors.New(`{"error": "Token expired"}`)
@@ -146,7 +146,7 @@ func ValidateToken(context *gin.Context) (users.UserInfo, error) {
 	return userInfo, nil
 }
 
-func getUserInfoFromClaims(jwtClaims jwt.MapClaims) users.UserInfo {
+func GetUserInfoFromClaims(jwtClaims jwt.MapClaims) users.UserInfo {
 	var userInfo users.UserInfo
 
 	userInfo.FirstName = jwtClaims["first_name"].(string)

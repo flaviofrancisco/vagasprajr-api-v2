@@ -105,21 +105,18 @@ func Login(context *gin.Context) {
 }
 
 func GetUser(context *gin.Context) {
-
-	userInfo, err := authentication.ValidateToken(context)
-
-	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
-	if userInfo.Id == "" {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Credentials not found"})
-		return
-	}
 	
-	if userInfo.Id != context.Param("id") {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+	currentUser, context_error := context.Get("userInfo")	
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+
+	userInfo := currentUser.(users.UserInfo)
+	
+	if userInfo.Id == "" {
+		context.JSON(http.StatusNotFound, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
 		return
 	}
 
