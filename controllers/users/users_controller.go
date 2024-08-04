@@ -102,5 +102,57 @@ func Login(context *gin.Context) {
 	}	
 
 	context.JSON(http.StatusOK, result)
+}
 
+func GetUser(context *gin.Context) {
+
+	userInfo, err := authentication.ValidateToken(context)
+
+	if err != nil {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	if userInfo.Id == "" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Credentials not found"})
+		return
+	}
+	
+	if userInfo.Id != context.Param("id") {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	user, err := users.GetUserById(userInfo.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := UserProfileResponse {
+		Id: user.Id.Hex(),
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+		Email: user.Email,
+		UserName: user.UserName,
+		AboutMe: user.AboutMe,
+		City: user.City,
+		State: user.State,
+		Links: user.Links,
+		IsEmailConfirmed: user.IsEmailConfirmed,
+		Roles: user.Roles,
+		Experiences: user.Experiences,
+		IsPublic: user.IsPublic,
+		ProfileViews: user.ProfileViews,
+		TechExperiences: user.TechExperiences,
+		Educations: user.Educations,
+		Certifications: user.Certifications,
+		JobPreference: user.JobPreference,
+		DiversityInfo: user.DiversityInfo,
+		IdiomsInfo: user.IdiomsInfo,
+		IsPublicForRecruiter: user.IsPublicForRecruiter,
+	}
+
+	context.JSON(http.StatusOK, response)
 }

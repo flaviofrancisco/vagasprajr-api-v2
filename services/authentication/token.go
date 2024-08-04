@@ -50,7 +50,7 @@ func (tk *Token) GetRefreshToken(token string, expiration time.Time) (string, er
 
 	claim = t.Claims.(jwt.MapClaims)
 
-	userInfo := tk.GetUserInfoFromClaims(claim)
+	userInfo := getUserInfoFromClaims(claim)
 
 	if time.Now().Unix() > int64(claim["exp"].(float64)) {
 		return "", errors.New(`{"error": "Token expired"}`)
@@ -101,8 +101,24 @@ func (tk *Token) GetToken(userInfo users.UserInfo, isRefreshToken bool) (string,
 	return token, nil
 }
 
-func (tk *Token) ValidateToken(token string) (users.UserInfo, error) {
+func ValidateToken(context *gin.Context) (users.UserInfo, error) {
 
+	token, err := context.Cookie("token")
+
+	if token == "" {
+
+		token = context.GetHeader("Authorization")
+		token = token[7:]
+		
+		if token == "" {
+			return users.UserInfo{}, errors.New(`{"error": "Token not found"}`)
+		}
+	}
+
+	if token == "" || err != nil {
+		return users.UserInfo{}, errors.New(`{"error": "Token not found"}`)
+	}
+	
 	var (
 		key   []byte
 		t     *jwt.Token
@@ -111,7 +127,7 @@ func (tk *Token) ValidateToken(token string) (users.UserInfo, error) {
 
 	key = []byte(os.Getenv("JWT_SECRET"))
 
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+	t, err = jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
 
@@ -121,7 +137,7 @@ func (tk *Token) ValidateToken(token string) (users.UserInfo, error) {
 
 	claim = t.Claims.(jwt.MapClaims)
 
-	userInfo := tk.GetUserInfoFromClaims(claim)
+	userInfo := getUserInfoFromClaims(claim)
 
 	if time.Now().Unix() > int64(claim["exp"].(float64)) {
 		return users.UserInfo{}, errors.New(`{"error": "Token expired"}`)
@@ -130,7 +146,7 @@ func (tk *Token) ValidateToken(token string) (users.UserInfo, error) {
 	return userInfo, nil
 }
 
-func (tk *Token) GetUserInfoFromClaims(jwtClaims jwt.MapClaims) users.UserInfo {
+func getUserInfoFromClaims(jwtClaims jwt.MapClaims) users.UserInfo {
 	var userInfo users.UserInfo
 
 	userInfo.FirstName = jwtClaims["first_name"].(string)

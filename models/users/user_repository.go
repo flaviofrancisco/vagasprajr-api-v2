@@ -195,3 +195,38 @@ func (user *User) UpdateLastLogin() error {
 
 	return nil	
 }
+
+func GetUserById(id string) (User, error) {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return User{}, err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	object_id, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	filter := bson.D{{"_id", object_id}}
+	var result User
+	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return User{}, nil
+		}
+	}
+
+	return result, nil	
+}
