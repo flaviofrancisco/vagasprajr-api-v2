@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -19,9 +18,9 @@ func main() {
 	}
 	
 	// print the environment variables
-	fmt.Println("DEBUG_MODE:", os.Getenv("DEBUG_MODE"))
-	fmt.Println("VERSION:", os.Getenv("VERSION"))
-	fmt.Println("BASE_UI_HOST:", os.Getenv("BASE_UI_HOST"))
+	log.Println("DEBUG_MODE:", os.Getenv("DEBUG_MODE"))
+	log.Println("VERSION:", os.Getenv("VERSION"))
+	log.Println("BASE_UI_HOST:", os.Getenv("BASE_UI_HOST"))
 
 	server := gin.Default()
 
