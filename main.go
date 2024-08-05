@@ -21,6 +21,8 @@ func main() {
 	log.Println("DEBUG_MODE:", os.Getenv("DEBUG_MODE"))
 	log.Println("VERSION:", os.Getenv("VERSION"))
 	log.Println("BASE_UI_HOST:", os.Getenv("BASE_UI_HOST"))
+	log.Println("MONGODB_URL:", os.Getenv("MONGODB_URL"))
+	log.Println("MONGODB_DATABASE:", os.Getenv("MONGODB_DATABASE"))	
 
 	server := gin.Default()
 
