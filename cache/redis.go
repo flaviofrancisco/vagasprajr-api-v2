@@ -13,7 +13,7 @@ type Redis struct {
 
 func NewRedis() (Redis, error) {
     var client = redis.NewClient(&redis.Options{
-        Addr:     "localhost:6379",
+        Addr:     os.Getenv("REDIS_SERVER"),
         Password: os.Getenv("REDIS_PASSWORD"), 
 		DB:	   0,
     })
