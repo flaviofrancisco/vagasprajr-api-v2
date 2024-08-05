@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/flaviofrancisco/vagasprajr-api-v2/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
