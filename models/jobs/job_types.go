@@ -44,3 +44,8 @@ type JobFilterOptions struct {
 	Providers []string           `json:"providers" bson:"providers"`
 	Salaries  []string           `json:"salaries" bson:"salaries"`
 }
+
+type JobItem struct {
+	JobShortUrl string `bson:"job_short_url"`
+	Url         string `bson:"url"`
+}

@@ -3,8 +3,10 @@ package jobs
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
@@ -202,6 +204,42 @@ func GetJobs(body JobFilter) (PaginatedResult, error) {
 		PerPage: perPage,
 		Data:    jobs,
 	}, nil
+}
+
+func GetOriginalURL(shortUrl string) (string, error) {
+
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+
+	client, err := models.Connect()
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return "", err
+	}
+
+	collection := client.Database(mongodb_database).Collection("jobs")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var result JobItem
+
+	log.Print("[MONGODB]: Searching for: ", shortUrl)
+
+	err = collection.FindOne(ctx, bson.M{"job_short_url": shortUrl, "is_approved": true, "is_closed": false }).Decode(&result)
+
+	if err != nil {
+		code := shortUrl[len(shortUrl)-6:]
+		return os.Getenv("BASE_UI_HOST")+`/vagas/` + code, err
+	}
+
+	return result.Url, nil
 }
 
 func appendCondition(andConditions []bson.M, field string, value string) []bson.M {
