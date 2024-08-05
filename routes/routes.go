@@ -4,10 +4,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/shorturls"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/users"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares/authentication"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares/authorization"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -39,6 +41,11 @@ func RegisterRoutes(server *gin.Engine) {
 		})
 	})
 
+	// Admin routes
+	admin := server.Group("/admin")
+	admin.Use(authentication.AuthMiddleware(), authorization.AuthorizationMiddleware([]string{controllers.ADMIN}))
+	admin.GET("/users", users.GetUsers)
+
 	// Jobs
 	server.POST("/jobs/search", jobs.GetJobs)
 	server.POST("/jobs/aggregated-values", jobs.GetAggregatedJobsValues)
@@ -55,8 +62,7 @@ func RegisterRoutes(server *gin.Engine) {
 	server.POST("/users", users.CreateUser)
 	server.POST("/auth/login", users.Login)	
 
-	// server.Group("/users")
-	// server.Use(middlewares.AuthMiddleware())
 
-	server.GET("/users/:id", middlewares.AuthMiddleware(), users.GetUser)
+
+	server.GET("/users/:id", authentication.AuthMiddleware(), users.GetUser)
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/models/roles"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -219,7 +220,7 @@ func GetUserById(id string) (User, error) {
 		return User{}, err
 	}
 
-	filter := bson.D{{"_id", object_id}}
+	filter := bson.D{{Key: "_id", Value: object_id}}
 	var result User
 	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
@@ -229,4 +230,64 @@ func GetUserById(id string) (User, error) {
 	}
 
 	return result, nil	
+}
+
+func GetUserRoles (id string) ([]string, error) {
+	
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	object_id, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	filter := bson.D{{Key: "_id", Value: object_id}}
+	var result User
+	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return []string{}, nil
+		}
+	}
+
+	if result.Roles == nil {
+		return []string{}, nil
+	}
+	
+	roles, err := roles.GetRoles()
+
+	if err != nil {
+		return []string{}, err
+	}
+	
+	resultRoles := []string{}
+
+	for _, role := range result.Roles {
+		for _, r := range roles {
+			roleID, err := primitive.ObjectIDFromHex(r.Id)
+			if err != nil {
+				continue // Skip invalid ObjectID
+			}
+			if roleID.Hex() == primitive.ObjectID(role).Hex() {
+				resultRoles = append(resultRoles, r.Name)
+			}
+		}
+	}
+	
+	return resultRoles, nil	
 }

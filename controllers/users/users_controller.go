@@ -153,3 +153,7 @@ func GetUser(context *gin.Context) {
 
 	context.JSON(http.StatusOK, response)
 }
+
+func GetUsers(context *gin.Context) {
+	context.JSON(http.StatusOK, gin.H{"message": "GetUsers"})
+}
