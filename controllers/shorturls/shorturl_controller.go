@@ -25,6 +25,8 @@ func GetOriginalURL(context *gin.Context) {
 	// Create a map to hold the original URL
 	response := make(map[string]string)
 	response["originalUrl"] = originalUrl
+
+	log.Print("Fetched original URL: ", originalUrl)
 	
 	context.JSON(200, response)	
 }
@@ -51,6 +53,8 @@ func RedirectToOriginalAdURL(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Problem updating the advertisement clicks"})
 		return
 	}
+
+	log.Print("redirecting to: ", originalUrl)
 		
 	context.Redirect(http.StatusTemporaryRedirect, originalUrl)
 }
@@ -79,6 +83,8 @@ func RedirectToOriginalJobUrl(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Problem updating the advertisement clicks"})
 		return
 	}
+
+	log.Print("redirecting to: ", originalUrl)
 
 	context.Redirect(http.StatusTemporaryRedirect, originalUrl)
 
