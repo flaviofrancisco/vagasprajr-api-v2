@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/shorturls"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -40,7 +40,7 @@ func RegisterRoutes(server *gin.Engine) {
 	})
 
 	// Jobs
-	server.POST("/jobs", jobs.GetJobs)
+	server.POST("/jobs/search", jobs.GetJobs)
 	server.POST("/jobs/aggregated-values", jobs.GetAggregatedJobsValues)
 
 	//Short URLs
