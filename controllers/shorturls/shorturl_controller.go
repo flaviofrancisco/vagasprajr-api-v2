@@ -73,7 +73,7 @@ func RedirectToOriginalJobUrl(context *gin.Context) {
 	originalUrl, err := jobs.GetOriginalURL(shortUrl)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Problem getting the original URL"})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})		
 		return
 	}
 
