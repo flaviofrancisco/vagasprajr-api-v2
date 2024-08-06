@@ -58,11 +58,10 @@ func RegisterRoutes(server *gin.Engine) {
 	// Redirect to the job's original URL from the short URL
 	server.GET("/j/:code", shorturls.RedirectToOriginalJobUrl)
 
-	// Users
-	server.POST("/users", users.CreateUser)
+	// Users	
 	server.POST("/auth/login", users.Login)	
-
-
+	server.GET("/auth/logout", users.LogOut)
+	server.POST("/auth/registration", users.CreateUser)
 
 	server.GET("/users/:id", authentication.AuthMiddleware(), users.GetUser)
 }

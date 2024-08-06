@@ -17,11 +17,11 @@ func CreateUser(context *gin.Context) {
 	err := users.CreateUser(body)
 
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "isRegistered": false})
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
+	context.JSON(http.StatusCreated, gin.H{"isRegistered": true})
 }
 
 func Login(context *gin.Context) {	
@@ -102,6 +102,13 @@ func Login(context *gin.Context) {
 	}	
 
 	context.JSON(http.StatusOK, result)
+}
+
+func LogOut(context *gin.Context) {	
+	
+	token := authentication.Token{}
+	token.DeleteTokenCookie(context)
+	context.JSON(http.StatusOK, gin.H{"message": "Logout realizado com sucesso"})
 }
 
 func GetUser(context *gin.Context) {

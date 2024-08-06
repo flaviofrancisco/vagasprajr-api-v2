@@ -184,6 +184,19 @@ func (tk *Token) SetTokenCookie(c *gin.Context) {
     )
 }
 
+func (tk *Token) DeleteTokenCookie(c *gin.Context) {
+	secure := os.Getenv("COOKIE_SECURE") == "true"
+	c.SetCookie(
+		"token",
+		"",
+		-1,
+		"/",
+		os.Getenv("COOKIE_DOMAIN"),
+		secure,
+		true,
+	)
+}
+
 func (tk *Token) SaveRefreshToken(userInfo users.UserInfo) error {
 	
 	token_string, err := tk.GetToken(userInfo, true)	
