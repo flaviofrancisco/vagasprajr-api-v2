@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"math/rand"
+
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
@@ -29,6 +31,23 @@ type Token struct {
 	ExpirationDate primitive.DateTime `bson:"expiration_date"`
 	CreatedAt      primitive.DateTime `bson:"created_at"`
 	UpdatedAt      primitive.DateTime `bson:"updated_at"`
+}
+
+func GetValidationToken() string {
+
+	// Create a randon string with alfanumeric characters with 6 characters
+
+	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+
+	b := make([]rune, 32)
+	for i := range b {
+		b[i] = letterRunes[r.Intn(len(letterRunes))]
+	}
+
+	return string(b)
 }
 
 func (tk *Token) GetRefreshToken(token string, expiration time.Time) (string, error) {

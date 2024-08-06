@@ -197,6 +197,96 @@ func (user *User) UpdateLastLogin() error {
 	return nil	
 }
 
+func Update(user *User) error {
+
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return err
+	}
+
+	db := client.Database(mongodb_database)
+
+	if user.JobPreference.JobLocations == nil || len(user.JobPreference.JobLocations) == 0 {
+		user.JobPreference.JobLocations = []UserJobLocation{
+			{
+				City:     user.City,
+				State:    user.State,
+				Priority: 1,
+			},
+		}
+	}
+
+	filter := bson.D{{Key: "_id", Value: user.Id}}
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "first_name", Value: user.FirstName},
+			{Key: "last_name", Value: user.LastName},
+			{Key: "city", Value: user.City},
+			{Key: "state", Value: user.State},
+			{Key: "links", Value: user.Links},
+			{Key: "experiences", Value: user.Experiences},
+			{Key: "user_name", Value: strings.ToLower(user.UserName)},
+			{Key: "last_update", Value: user.LastUpdate},
+			{Key: "about_me", Value: user.AboutMe},
+			{Key: "is_public", Value: user.IsPublic},
+			{Key: "tech_experiences", Value: user.TechExperiences},
+			{Key: "educations", Value: user.Educations},
+			{Key: "certifications", Value: user.Certifications},
+			{Key: "job_preferences", Value: user.JobPreference},
+			{Key: "diversity_info", Value: user.DiversityInfo},
+			{Key: "idioms_info", Value: user.IdiomsInfo},
+			{Key: "is_public_for_recruiter", Value: user.IsPublicForRecruiter},
+		}},
+	}
+
+	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (user *User) ConfirmEmail() error {
+
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return err
+	}
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{"_id", user.Id}}
+	update := bson.D{{"$set", bson.D{{"is_email_confirmed", true}}}}
+
+	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetUserById(id string) (User, error) {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()

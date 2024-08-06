@@ -4,6 +4,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/flaviofrancisco/vagasprajr-api-v2/services/oauth/google"
+
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/shorturls"
@@ -62,6 +64,7 @@ func RegisterRoutes(server *gin.Engine) {
 	server.POST("/auth/login", users.Login)	
 	server.GET("/auth/logout", users.LogOut)
 	server.POST("/auth/registration", users.CreateUser)
+	server.POST("/oauth/google", google.OAuthGoogle)
 
 	server.GET("/users/:id", authentication.AuthMiddleware(), users.GetUser)
 }
