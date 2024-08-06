@@ -120,6 +120,34 @@ func (tk *Token) GetToken(userInfo users.UserInfo, isRefreshToken bool) (string,
 	return token, nil
 }
 
+func ValidateStringToken(token string) (users.UserInfo, error) {
+	
+	var (
+		key   []byte		
+		claim jwt.MapClaims
+	)
+
+	key = []byte(os.Getenv("JWT_SECRET"))
+
+	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		return key, nil
+	})
+
+	if err != nil {
+		return users.UserInfo{}, errors.New(`{"error": "Error parsing the token - ` + err.Error() + `"}`)
+	}
+
+	claim = t.Claims.(jwt.MapClaims)
+
+	userInfo := GetUserInfoFromClaims(claim)
+
+	if time.Now().Unix() > int64(claim["exp"].(float64)) {
+		return users.UserInfo{}, errors.New(`{"error": "Token expired"}`)
+	}
+
+	return userInfo, nil
+}
+
 func ValidateToken(context *gin.Context) (users.UserInfo, error) {
 
 	token, err := context.Cookie("token")
@@ -137,32 +165,8 @@ func ValidateToken(context *gin.Context) (users.UserInfo, error) {
 	if token == "" || err != nil {
 		return users.UserInfo{}, errors.New(`{"error": "Token not found"}`)
 	}
-	
-	var (
-		key   []byte
-		t     *jwt.Token
-		claim jwt.MapClaims
-	)
 
-	key = []byte(os.Getenv("JWT_SECRET"))
-
-	t, err = jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		return key, nil
-	})
-
-	if err != nil {
-		return users.UserInfo{}, errors.New(`{"error": "Error parsing the token - ` + err.Error() + `"}`)
-	}
-
-	claim = t.Claims.(jwt.MapClaims)
-
-	userInfo := GetUserInfoFromClaims(claim)
-
-	if time.Now().Unix() > int64(claim["exp"].(float64)) {
-		return users.UserInfo{}, errors.New(`{"error": "Token expired"}`)
-	}
-
-	return userInfo, nil
+	return ValidateStringToken(token)
 }
 
 func GetUserInfoFromClaims(jwtClaims jwt.MapClaims) users.UserInfo {
