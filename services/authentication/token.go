@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"	
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const (
@@ -237,7 +237,7 @@ func (tk *Token) SaveRefreshToken(userInfo users.UserInfo) error {
 			user_token.CreatedAt = primitive.NewDateTimeFromTime(currentDateTimeUTC)			
 			user_token.ExpirationDate = tk.ExpirationDate
 
-			_, err = db.Collection(USERS_TOKENS_COLLECTION).InsertOne(context.Background(), tk)
+			_, err = db.Collection(USERS_TOKENS_COLLECTION).InsertOne(context.Background(), user_token)
 
 			if err != nil {
 				return err
