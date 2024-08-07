@@ -17,7 +17,7 @@ type AuthResponse struct {
 }
 
 type UserInfo struct {
-	Id              string            `json:"id"`
+	Id              primitive.ObjectID `bson:"_id" json:"_id"`
 	FirstName       string            `json:"first_name"`
 	LastName        string            `json:"last_name"`
 	Email           string            `json:"email"`

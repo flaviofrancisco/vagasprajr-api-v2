@@ -11,7 +11,6 @@ import (
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/services/authentication"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/emails"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -117,7 +116,7 @@ func OAuthGoogle(context *gin.Context) {
 		currentUser.IsEmailConfirmed = googleUserInfo.Verified
 
 		if !currentUser.IsEmailConfirmed {
-			currentUser.ValidationToken = authentication.GetValidationToken()
+			currentUser.ValidationToken = users.GenerateValidationToken()
 			go emails.SendEmail("", []string{new_google_user.Email}, "Confirmação de email", emails.GetWelcomeEmail(currentUser.ValidationToken))
 		}
 
@@ -168,13 +167,12 @@ func OAuthGoogle(context *gin.Context) {
 	userInfo.Links = currentUser.Links
 	userInfo.Provider = currentUser.Provider
 	userInfo.UserName = currentUser.UserName
-	userInfo.Id = currentUser.Id.Hex()
+	userInfo.Id = currentUser.Id
 	
 	expirationDate := time.Now().UTC().Add(time.Duration(1) * time.Hour)
 
-	token := authentication.Token{}
-	
-	accessToken, err := token.GetToken(userInfo, expirationDate)
+	userToken := users.UserToken{}	
+	err = userToken.SetToken(userInfo, expirationDate)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -182,15 +180,15 @@ func OAuthGoogle(context *gin.Context) {
 	}
 
 	result:= users.AuthResponse{
-		AccessToken: accessToken,
+		AccessToken: userToken.Token,
 		Success: true,
 		UserInfo: userInfo,
-		ExpirationDate: token.ExpirationDate,		
+		ExpirationDate: userToken.ExpirationDate,		
 	}
 
-	token.SetTokenCookie(context)
+	userToken.SetTokenCookie(context)
 
-	err = token.SaveRefreshToken(userInfo)
+	err = users.SaveRefreshToken(userInfo)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

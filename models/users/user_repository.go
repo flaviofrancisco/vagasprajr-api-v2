@@ -316,7 +316,7 @@ func (user *User) ConfirmEmail() error {
 	return nil
 }
 
-func GetUserById(id string) (User, error) {
+func GetUserById(id primitive.ObjectID) (User, error) {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
 
@@ -332,14 +332,12 @@ func GetUserById(id string) (User, error) {
 	}()
 
 	db := client.Database(mongodb_database)
-
-	object_id, err := primitive.ObjectIDFromHex(id)
-
+	
 	if err != nil {
 		return User{}, err
 	}
 
-	filter := bson.D{{Key: "_id", Value: object_id}}
+	filter := bson.D{{Key: "_id", Value: id}}
 	var result User
 	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
@@ -351,7 +349,7 @@ func GetUserById(id string) (User, error) {
 	return result, nil	
 }
 
-func GetUserRoles (id string) ([]string, error) {
+func GetUserRoles (id primitive.ObjectID) ([]string, error) {
 	
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
@@ -359,8 +357,7 @@ func GetUserRoles (id string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-
-	// Ensure the client connection is closed once the function completes
+	
 	defer func() {
 		if err = client.Disconnect(context.Background()); err != nil {
 			panic(err)
@@ -369,13 +366,7 @@ func GetUserRoles (id string) ([]string, error) {
 
 	db := client.Database(mongodb_database)
 
-	object_id, err := primitive.ObjectIDFromHex(id)
-
-	if err != nil {
-		return []string{}, err
-	}
-
-	filter := bson.D{{Key: "_id", Value: object_id}}
+	filter := bson.D{{Key: "_id", Value: id}}
 	var result User
 	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {

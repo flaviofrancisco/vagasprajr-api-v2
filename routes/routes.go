@@ -4,15 +4,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/flaviofrancisco/vagasprajr-api-v2/services/oauth/google"
-
+	
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/shorturls"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/tokens"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares/authentication"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares/authorization"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/services/oauth/google"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -71,7 +70,7 @@ func RegisterRoutes(server *gin.Engine) {
 	server.GET("/auth/signup/confirm-email/:token", users.ConfirmEmail)
 	
 	// Token
-	server.GET("/auth/refresh-token", tokens.GetRefreshToken)
+	server.GET("/auth/refresh-token", users.GetRefreshToken)
 
 	server.GET("/users/:id", authentication.AuthMiddleware(), users.GetUser)
 }

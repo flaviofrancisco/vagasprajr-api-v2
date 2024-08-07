@@ -15,7 +15,7 @@ func AuthorizationMiddleware(roles []string) gin.HandlerFunc {
 
 		userInfo := c.MustGet("userInfo").(users.UserInfo)
 
-		if userInfo.Id == ""{
+		if userInfo.Id.IsZero() {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
 		}
 

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/services/authentication"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -125,26 +124,26 @@ func Login(context *gin.Context) {
 		Links: currentUser.Links,
 		Provider: currentUser.Provider,
 		UserName: currentUser.UserName,
-		Id: currentUser.Id.Hex(),
+		Id: currentUser.Id,
 	}
 
 	expirationDateUTC := time.Now().UTC().Add(time.Duration(1) * time.Hour)
 
-	token := authentication.Token{}
+	userToken := users.UserToken{
+		Id: currentUser.Id,
+	}
 
-	token_string, err := token.GetToken(userInfo, expirationDateUTC)
+	err = userToken.SetToken(userInfo, expirationDateUTC)
 
-	tokenExpirationDate := token.ExpirationDate.Time().UTC()
-		
-	if (err != nil) {
+	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	token.Token = token_string	
+	tokenExpirationDate := userToken.ExpirationDate.Time().UTC()
 
-	token.SetTokenCookie(context)		
-	err = token.SaveRefreshToken(userInfo)
+	userToken.SetTokenCookie(context)		
+	err = users.SaveRefreshToken(userInfo)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -152,7 +151,7 @@ func Login(context *gin.Context) {
 	}
 
 	result := users.AuthResponse {
-		AccessToken: token.Token,
+		AccessToken: userToken.Token,
 		Success: true,
 		UserInfo: userInfo,
 		ExpirationDate: primitive.NewDateTimeFromTime(tokenExpirationDate),		
@@ -161,10 +160,8 @@ func Login(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
-func LogOut(context *gin.Context) {	
-	
-	token := authentication.Token{}
-	token.DeleteTokenCookie(context)
+func LogOut(context *gin.Context) {			
+	users.DeleteTokenCookie(context)
 	context.JSON(http.StatusOK, gin.H{"message": "Logout realizado com sucesso"})
 }
 
@@ -179,8 +176,8 @@ func GetUser(context *gin.Context) {
 
 	userInfo := currentUser.(users.UserInfo)
 	
-	if userInfo.Id == "" {
-		context.JSON(http.StatusNotFound, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
 		return
 	}
 
@@ -216,6 +213,67 @@ func GetUser(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response)
+}
+
+func GetRefreshToken(context *gin.Context) {
+
+	token := users.UserToken{}
+	userInfo := users.UserInfo{}
+
+	err := userInfo.GetUserInfoFromContext(context)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	user_token := users.UserToken{
+		Id: userInfo.Id,
+	}	
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = user_token.SetRefreshToken()
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	userInfo_refresh_token := users.UserInfo{}
+
+	err = userInfo_refresh_token.SetUserInfoFromTokenString(user_token.Token)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Checks if token is expired
+	if user_token.ExpirationDate.Time().Before(time.Now()) {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Token expirado"})
+		return
+	}	
+
+	if userInfo.Email != userInfo_refresh_token.Email {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Token inválido"})
+		return
+	}
+
+	token.ExpirationDate = user_token.ExpirationDate
+	token.SetTokenCookie(context)
+
+	result := users.AuthResponse {
+		AccessToken: user_token.Token,
+		Success: true,
+		UserInfo: userInfo,
+		ExpirationDate: user_token.ExpirationDate,
+	}	
+
+	context.JSON(http.StatusOK, result)
 }
 
 func GetUsers(context *gin.Context) {
