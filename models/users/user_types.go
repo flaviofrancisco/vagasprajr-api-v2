@@ -160,7 +160,7 @@ type UserJobLocation struct {
 }
 
 type UserToken struct {
-	Id             string             `bson:"_id"`
+	Id             primitive.ObjectID  `bson:"_id"`
 	UserId         primitive.ObjectID `bson:"user_id"`
 	Token          string             `bson:"token"`
 	ExpirationDate primitive.DateTime `bson:"expiration_date"`
