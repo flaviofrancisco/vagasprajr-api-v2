@@ -3,7 +3,7 @@ package tokens
 import (
 	"net/http"
 	"time"
-
+	
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/authentication"
 	"github.com/gin-gonic/gin"
@@ -22,6 +22,11 @@ func GetRefreshToken(context *gin.Context) {
 	}
 
 	userId, err := primitive.ObjectIDFromHex(userInfo.Id)
+
+	if (err != nil) {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	user_token := users.UserToken{
 		UserId: userId,
@@ -52,12 +57,14 @@ func GetRefreshToken(context *gin.Context) {
 		return
 	}
 
+	token.ExpirationDate = user_token.ExpirationDate
 	token.SetTokenCookie(context)
 
 	result := users.AuthResponse {
-		AccessToken: token.Token,
+		AccessToken: user_token.Token,
 		Success: true,
 		UserInfo: userInfo,
+		ExpirationDate: user_token.ExpirationDate,
 	}	
 
 	context.JSON(http.StatusOK, result)

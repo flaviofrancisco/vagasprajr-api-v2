@@ -9,7 +9,6 @@ import (
 	"math/rand"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -22,6 +21,10 @@ import (
 
 const (
 	USERS_TOKENS_COLLECTION = "users_tokens"
+)
+
+const (
+	TOKEN_NAME = "vagasprajr_token"
 )
 
 type Token struct {
@@ -50,59 +53,16 @@ func GetValidationToken() string {
 	return string(b)
 }
 
-func (tk *Token) GetRefreshToken(token string, expiration time.Time) (string, error) {
-	var (
-		key   []byte
-		t     *jwt.Token
-		claim jwt.MapClaims
-	)
+func (tk *Token) GetToken(userInfo users.UserInfo, expirationTime time.Time) (string, error) {
 
-	key = []byte(os.Getenv("JWT_SECRET"))
-
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		return key, nil
-	})
-
-	if err != nil {
-		return "", errors.New(`{"error": "Error parsing the token - ` + err.Error() + `"}`)
-	}
-
-	claim = t.Claims.(jwt.MapClaims)
-
-	userInfo := GetUserInfoFromClaims(claim)
-
-	if time.Now().Unix() > int64(claim["exp"].(float64)) {
-		return "", errors.New(`{"error": "Token expired"}`)
-	}
-
-	var newToken string
-
-	newToken, err = tk.GetToken(userInfo, false)
-
-	if err != nil {
-		return "", errors.New(`{"error": "Error getting the token - ` + err.Error() + `"}`)
-	}
-
-	return newToken, nil
-}
-
-func (tk *Token) GetToken(userInfo users.UserInfo, isRefreshToken bool) (string, error) {
 	var (
 		key   []byte
 		t     *jwt.Token
 		token string
 	)
 
-	var expiration time.Time
-
-	if isRefreshToken {
-		expiration = time.Now().Add(time.Minute * 60 * 24 * 7) // 7 days
-	} else {
-		expiration = time.Now().Add(time.Minute * 60) // 60 minutes
-	}	
-
 	key = []byte(os.Getenv("JWT_SECRET"))
-
+	
 	t = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":         userInfo.Id,
 		"first_name": userInfo.FirstName,
@@ -110,8 +70,10 @@ func (tk *Token) GetToken(userInfo users.UserInfo, isRefreshToken bool) (string,
 		"user_name":  userInfo.UserName,
 		"email":      userInfo.Email,
 		"links":      userInfo.Links,
-		"exp":        expiration.Unix(),
+		"exp":        expirationTime.Unix(),
 	})
+
+	tk.ExpirationDate = primitive.NewDateTimeFromTime(expirationTime)
 
 	token, err := t.SignedString(key)
 	if err != nil {
@@ -141,7 +103,7 @@ func ValidateStringToken(token string) (users.UserInfo, error) {
 
 	userInfo := GetUserInfoFromClaims(claim)
 
-	if time.Now().Unix() > int64(claim["exp"].(float64)) {
+	if time.Now().UTC().Unix() > int64(claim["exp"].(float64)) {
 		return users.UserInfo{}, errors.New(`{"error": "Token expired"}`)
 	}
 
@@ -150,7 +112,7 @@ func ValidateStringToken(token string) (users.UserInfo, error) {
 
 func ValidateToken(context *gin.Context) (users.UserInfo, error) {
 
-	token, err := context.Cookie("token")
+	token, _ := context.Cookie("token")
 
 	if token == "" {
 
@@ -162,7 +124,7 @@ func ValidateToken(context *gin.Context) (users.UserInfo, error) {
 		}
 	}
 
-	if token == "" || err != nil {
+	if token == "" {
 		return users.UserInfo{}, errors.New(`{"error": "Token not found"}`)
 	}
 
@@ -195,11 +157,16 @@ func GetUserInfoFromClaims(jwtClaims jwt.MapClaims) users.UserInfo {
 }
 
 func (tk *Token) SetTokenCookie(c *gin.Context) {
+
+	if tk.ExpirationDate.Time().IsZero() {
+		panic("Expiration date is required")
+	}
+
     secure := os.Getenv("COOKIE_SECURE") == "true"
     c.SetCookie(
-        "token",
+        "vagasprajr_token",
         tk.Token,
-        60*24*30, // 30 days
+        int(tk.ExpirationDate.Time().UTC().Unix()),
         "/",
         os.Getenv("COOKIE_DOMAIN"),
         secure,
@@ -210,7 +177,7 @@ func (tk *Token) SetTokenCookie(c *gin.Context) {
 func (tk *Token) DeleteTokenCookie(c *gin.Context) {
 	secure := os.Getenv("COOKIE_SECURE") == "true"
 	c.SetCookie(
-		"token",
+		"vagasprajr_token",
 		"",
 		-1,
 		"/",
@@ -221,8 +188,12 @@ func (tk *Token) DeleteTokenCookie(c *gin.Context) {
 }
 
 func (tk *Token) SaveRefreshToken(userInfo users.UserInfo) error {
+
+	expirationDate := time.Now().UTC().Add(time.Duration(24) * time.Hour)
+	tk.ExpirationDate = primitive.NewDateTimeFromTime(expirationDate)
+	currentDateTimeUTC := time.Now().UTC()
 	
-	token_string, err := tk.GetToken(userInfo, true)	
+	token_string, err := tk.GetToken(userInfo, expirationDate)	
 
 	if (err != nil) {
 		return err
@@ -255,14 +226,17 @@ func (tk *Token) SaveRefreshToken(userInfo users.UserInfo) error {
 
 	// Check if user already exists
 	filter := bson.D{{Key: "user_id", Value: tk.UserId}}
+
+	user_token := users.UserToken{}
 	
-	err = db.Collection(USERS_TOKENS_COLLECTION).FindOne(context.Background(), filter).Decode(&tk)
+	err = db.Collection(USERS_TOKENS_COLLECTION).FindOne(context.Background(), filter).Decode(&user_token)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			tk.Id = uuid.New().String()
-			tk.CreatedAt = primitive.NewDateTimeFromTime(commons.GetBrasiliaTime())
-			tk.UpdatedAt = primitive.NewDateTimeFromTime(commons.GetBrasiliaTime())
+
+			user_token.Id = uuid.New().String()
+			user_token.CreatedAt = primitive.NewDateTimeFromTime(currentDateTimeUTC)			
+			user_token.ExpirationDate = tk.ExpirationDate
 
 			_, err = db.Collection(USERS_TOKENS_COLLECTION).InsertOne(context.Background(), tk)
 
@@ -277,7 +251,7 @@ func (tk *Token) SaveRefreshToken(userInfo users.UserInfo) error {
 		update := bson.D{{Key: "$set", Value: bson.D{
 			{Key: "token", Value: tk.Token},
 			{Key: "expiration_date", Value: tk.ExpirationDate},
-			{Key: "updated_at", Value: primitive.NewDateTimeFromTime(commons.GetBrasiliaTime())},
+			{Key: "updated_at", Value: primitive.NewDateTimeFromTime(currentDateTimeUTC)},
 		}}}
 
 		opts := options.Update().SetUpsert(true)

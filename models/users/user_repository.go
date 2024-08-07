@@ -8,9 +8,9 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/roles"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -48,7 +48,7 @@ func CreateUser(user User) (error) {
 	user.SetSaltedPassword()
 	user.IsDeleted = false
 	user.IsEmailConfirmed = false
-	user.CreatedAt = primitive.NewDateTimeFromTime(commons.GetBrasiliaTime())
+	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 	user.LastLogin = primitive.DateTime(0)
 	user.IsPublic = false
 	user.ProfileViews = 0
@@ -190,7 +190,7 @@ func (user *User) UpdateLastLogin() error {
 	db := client.Database(mongodb_database)
 
 	filter := bson.D{{"email", strings.ToLower(user.Email)}}
-	update := bson.D{{"$set", bson.D{{"last_login", primitive.NewDateTimeFromTime(commons.GetBrasiliaTime())}}}}
+	update := bson.D{{"$set", bson.D{{"last_login", primitive.NewDateTimeFromTime(time.Now().UTC())}}}}
 
 	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
 

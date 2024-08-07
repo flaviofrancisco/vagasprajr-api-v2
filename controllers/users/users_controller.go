@@ -3,10 +3,12 @@ package users
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/authentication"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func CreateUser(context *gin.Context) {
@@ -75,19 +77,22 @@ func Login(context *gin.Context) {
 		Id: currentUser.Id.Hex(),
 	}
 
-	var token authentication.Token
-	
-	token_string, err := token.GetToken(userInfo, false)
-	
+	expirationDateUTC := time.Now().UTC().Add(time.Duration(1) * time.Hour)
+
+	token := authentication.Token{}
+
+	token_string, err := token.GetToken(userInfo, expirationDateUTC)
+
+	tokenExpirationDate := token.ExpirationDate.Time().UTC()
+		
 	if (err != nil) {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	token.Token = token_string
+	token.Token = token_string	
 
-	token.SetTokenCookie(context)	
-
+	token.SetTokenCookie(context)		
 	err = token.SaveRefreshToken(userInfo)
 
 	if err != nil {
@@ -99,8 +104,9 @@ func Login(context *gin.Context) {
 		AccessToken: token.Token,
 		Success: true,
 		UserInfo: userInfo,
+		ExpirationDate: primitive.NewDateTimeFromTime(tokenExpirationDate),		
 	}	
-
+	
 	context.JSON(http.StatusOK, result)
 }
 

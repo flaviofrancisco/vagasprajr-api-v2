@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
-	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/authentication"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/emails"
@@ -108,6 +108,12 @@ func OAuthGoogle(context *gin.Context) {
 		}
 
 		currentUser, err = users.GetUserByEmail(new_google_user.Email)
+
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		currentUser.IsEmailConfirmed = googleUserInfo.Verified
 
 		if !currentUser.IsEmailConfirmed {
@@ -164,20 +170,23 @@ func OAuthGoogle(context *gin.Context) {
 	userInfo.UserName = currentUser.UserName
 	userInfo.Id = currentUser.Id.Hex()
 	
+	expirationDate := time.Now().UTC().Add(time.Duration(1) * time.Hour)
+
 	token := authentication.Token{}
 	
-	accessToken, err := token.GetToken(userInfo,false)
+	accessToken, err := token.GetToken(userInfo, expirationDate)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	var result users.AuthResponse
-
-	result.AccessToken = accessToken
-	result.Success = true
-	result.UserInfo = userInfo
+	result:= users.AuthResponse{
+		AccessToken: accessToken,
+		Success: true,
+		UserInfo: userInfo,
+		ExpirationDate: token.ExpirationDate,		
+	}
 
 	token.SetTokenCookie(context)
 
@@ -209,7 +218,7 @@ func (user *GoogleUserInfo) Create() (*GoogleUserInfo, error) {
 
 	db := client.Database(mongodb_database)
 
-	user.CreatedAt = primitive.NewDateTimeFromTime(commons.GetBrasiliaTime())
+	user.CreatedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 
 	_, err = db.Collection(USERS_GOOGLE_COLLECTION).InsertOne(context.Background(), user)
 

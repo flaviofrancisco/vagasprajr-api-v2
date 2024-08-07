@@ -48,7 +48,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		userInfo := authentication.GetUserInfoFromClaims(claim)
 
-		if time.Now().Unix() > int64(claim["exp"].(float64)) {
+		if time.Now().UTC().Unix() > int64(claim["exp"].(float64)) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})	
 		}
 

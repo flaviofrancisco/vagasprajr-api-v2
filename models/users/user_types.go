@@ -10,9 +10,10 @@ type AuthRequestBody struct {
 }
 
 type AuthResponse struct {
-	AccessToken string   `json:"access_token"`
-	Success     bool     `json:"success"`
-	UserInfo    UserInfo `json:"user_info"`
+	AccessToken 			string   `json:"access_token"`
+	Success     			bool     `json:"success"`
+	UserInfo    			UserInfo `json:"user_info"`
+	ExpirationDate 			primitive.DateTime `json:"expiration_date"`		
 }
 
 type UserInfo struct {

@@ -12,8 +12,9 @@ func HandleValueForRegex(value string) string {
 	return escapedPart
 }
 
-func GetBrasiliaTime() time.Time {
-	currentTime := time.Now()
-	currentTime = currentTime.Add(-3 * time.Hour)
-	return currentTime
+func GetBrasiliaTime() time.Time {	
+	local_time := time.Now()
+	gmt_location := time.FixedZone("GMT", -3*60*60)
+	gmt_time := local_time.In(gmt_location)
+	return gmt_time
 }
