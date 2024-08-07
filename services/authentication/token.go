@@ -235,8 +235,10 @@ func (tk *Token) SaveRefreshToken(userInfo users.UserInfo) error {
 			
 			user_token.Id = primitive.NewObjectID()
 			user_token.CreatedAt = primitive.NewDateTimeFromTime(currentDateTimeUTC)			
+			user_token.UpdatedAt = primitive.NewDateTimeFromTime(currentDateTimeUTC)
 			user_token.ExpirationDate = tk.ExpirationDate
 			user_token.UserId = tk.UserId
+			user_token.Token = tk.Token
 
 			_, err = db.Collection(USERS_TOKENS_COLLECTION).InsertOne(context.Background(), user_token)
 
