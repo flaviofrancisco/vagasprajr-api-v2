@@ -12,7 +12,6 @@ import (
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,12 +27,12 @@ const (
 )
 
 type Token struct {
-	Id             string             `bson:"_id"`
-	UserId         primitive.ObjectID `bson:"user_id"`
-	Token          string             `bson:"token"`
-	ExpirationDate primitive.DateTime `bson:"expiration_date"`
-	CreatedAt      primitive.DateTime `bson:"created_at"`
-	UpdatedAt      primitive.DateTime `bson:"updated_at"`
+	Id             string             `bson:"_id" json:"id"`
+	UserId         primitive.ObjectID `bson:"user_id" json:"user_id"`
+	Token          string             `bson:"token" json:"token"`
+	ExpirationDate primitive.DateTime `bson:"expiration_date" json:"expiration_date"`
+	CreatedAt      primitive.DateTime `bson:"created_at" json:"created_at"`
+	UpdatedAt      primitive.DateTime `bson:"updated_at" json:"updated_at"`
 }
 
 func GetValidationToken() string {
@@ -233,8 +232,7 @@ func (tk *Token) SaveRefreshToken(userInfo users.UserInfo) error {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-
-			user_token.Id = uuid.New().String()
+			
 			user_token.CreatedAt = primitive.NewDateTimeFromTime(currentDateTimeUTC)			
 			user_token.ExpirationDate = tk.ExpirationDate
 
