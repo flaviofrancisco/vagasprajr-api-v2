@@ -27,7 +27,7 @@ const (
 )
 
 type Token struct {
-	Id             string             `bson:"_id" json:"id"`
+	Id             primitive.ObjectID `bson:"_id" json:"id"`
 	UserId         primitive.ObjectID `bson:"user_id" json:"user_id"`
 	Token          string             `bson:"token" json:"token"`
 	ExpirationDate primitive.DateTime `bson:"expiration_date" json:"expiration_date"`
