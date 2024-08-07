@@ -11,7 +11,9 @@ import (
 	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/roles"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/services/emails"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -26,6 +28,29 @@ const (
 const (
 	USERS_TOKENS_COLLECTION = "users_tokens"
 )
+
+func SignUp(user User) (error) {
+
+	err:= commons.ValidatePassword(user.Password)
+
+	if err != nil {
+		return err
+	}
+
+	user.Email = strings.ToLower(user.Email)	
+	user.ValidationToken = commons.GetValidationToken()
+
+	err = CreateUser(user)
+
+	if err != nil {
+		return err
+	}
+
+	go emails.SendEmail("", []string{user.Email}, "Confirmação de email", emails.GetWelcomeEmail(user.ValidationToken))
+
+	return nil
+
+}
 
 func CreateUser(user User) (error) {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
@@ -279,8 +304,8 @@ func (user *User) ConfirmEmail() error {
 
 	db := client.Database(mongodb_database)
 
-	filter := bson.D{{"_id", user.Id}}
-	update := bson.D{{"$set", bson.D{{"is_email_confirmed", true}}}}
+	filter := bson.D{{Key: "_id", Value: user.Id}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "is_email_confirmed", Value: true}}}}
 
 	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
 
@@ -412,4 +437,32 @@ func (u *UserToken) SetRefreshToken() error {
 	}
 
 	return nil
+}
+
+func GetUserByValidationToken(token string) (User, error) {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return User{}, err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{Key: "validation_token", Value: token}}
+	var result User
+	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return User{}, nil
+		}
+	}
+
+	return result, nil	
 }

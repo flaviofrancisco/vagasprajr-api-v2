@@ -11,6 +11,57 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func SignUp (context *gin.Context) {
+	
+	var body users.User
+	err := context.BindJSON(&body)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = users.SignUp(body)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "isRegistered": false})
+		return
+	}
+
+	context.JSON(http.StatusCreated, gin.H{"isRegistered": true})	
+}
+
+func ConfirmEmail(context *gin.Context) {
+	
+	token := context.Param("token")
+
+	if token == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Token não informado"})
+		return
+	}
+
+	user, err := users.GetUserByValidationToken(token)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.Email == "" {
+		context.JSON(http.StatusNotFound, gin.H{"error": "Token inválido"})
+		return
+	}
+	
+	err = user.ConfirmEmail()
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"isEmailConfirmed": true})
+}
+
 func CreateUser(context *gin.Context) {
 
 	var body users.User

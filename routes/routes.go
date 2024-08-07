@@ -63,10 +63,13 @@ func RegisterRoutes(server *gin.Engine) {
 
 	// Users	
 	server.POST("/auth/login", users.Login)	
-	server.GET("/auth/logout", users.LogOut)
-	server.POST("/auth/registration", users.CreateUser)
+	server.GET("/auth/logout", users.LogOut)	
 	server.POST("/oauth/google", google.OAuthGoogle)
 
+	// Singn Up
+	server.POST("/auth/signup", users.SignUp)
+	server.GET("/auth/signup/confirm-email/:token", users.ConfirmEmail)
+	
 	// Token
 	server.GET("/auth/refresh-token", tokens.GetRefreshToken)
 
