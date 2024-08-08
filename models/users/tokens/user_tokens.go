@@ -28,24 +28,24 @@ type UserToken struct {
 	UpdatedAt      primitive.DateTime `bson:"updated_at"`
 }
 
-func GetExpirationTimeInSeconds(seconds int) time.Time {
+func GetDateTimePlusSeconds (seconds int) time.Time {
 	return time.Now().UTC().Add(time.Duration(seconds) * time.Second)
 }
 
-func GetExpirationTimeInMinutes(minutes int) time.Time {
+func GetDateTimePlus(minutes int) time.Time {
 	return time.Now().UTC().Add(time.Duration(minutes) * time.Minute)
 }
 
-func GetExpirationTimeInHours(hours int) time.Time {
+func GetDateTimePlusHours(hours int) time.Time {
 	return time.Now().UTC().Add(time.Duration(hours) * time.Hour)
 }
 
 func getExpirationToken() time.Time {
-	return GetExpirationTimeInSeconds(30)
+	return GetDateTimePlusHours(1)
 }
 
 func getExpirationRefreshToken() time.Time {
-	return GetExpirationTimeInMinutes(2)
+	return GetDateTimePlusHours(24)
 }
 
 // SetToken - Set the token for the user with a default expiration time
