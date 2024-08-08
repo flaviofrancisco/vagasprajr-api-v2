@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users/tokens"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -46,8 +46,11 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claim = t.Claims.(jwt.MapClaims)
 
-		userInfo := users.UserInfo{}
-		userInfo.SetUserInfo(claim)
+		userInfo, err := tokens.GetUserInfo(claim)
+
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		}
 		
 		if time.Now().UTC().Unix() > int64(claim["exp"].(float64)) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})	

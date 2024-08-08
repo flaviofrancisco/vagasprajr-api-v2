@@ -402,34 +402,6 @@ func GetUserRoles (id primitive.ObjectID) ([]string, error) {
 	return resultRoles, nil	
 }
 
-func (u *UserToken) SetRefreshToken() error {
-
-	mongodb_database := os.Getenv("MONGODB_DATABASE")
-	client, err := models.Connect()
-
-	defer func() {
-		if err = client.Disconnect(context.Background()); err != nil {
-			panic(err)
-		}
-	}()
-
-	if err != nil {
-		return err
-	}
-
-	db := client.Database(mongodb_database)
-
-	filter := bson.D{{Key: "user_id", Value: u.UserId}}
-
-	err = db.Collection(USERS_TOKENS_COLLECTION).FindOne(context.Background(), filter).Decode(&u)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func GetUserByValidationToken(token string) (User, error) {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()

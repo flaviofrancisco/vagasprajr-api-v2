@@ -158,12 +158,3 @@ type UserJobLocation struct {
 	State    string `json:"state"`
 	Priority int    `json:"priority"`
 }
-
-type UserToken struct {
-	Id             primitive.ObjectID  `bson:"_id"`
-	UserId         primitive.ObjectID `bson:"user_id"`
-	Token          string             `bson:"token"`
-	ExpirationDate primitive.DateTime `bson:"expiration_date"`
-	CreatedAt      primitive.DateTime `bson:"created_at"`
-	UpdatedAt      primitive.DateTime `bson:"updated_at"`
-}

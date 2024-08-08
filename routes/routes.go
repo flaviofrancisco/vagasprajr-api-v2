@@ -70,7 +70,7 @@ func RegisterRoutes(server *gin.Engine) {
 	server.GET("/auth/signup/confirm-email/:token", users.ConfirmEmail)
 	
 	// Token
-	server.GET("/auth/refresh-token", users.GetRefreshToken)
+	server.GET("/auth/refresh-token", users.RefreshToken)
 
 	server.GET("/users/:id", authentication.AuthMiddleware(), users.GetUser)
 }
