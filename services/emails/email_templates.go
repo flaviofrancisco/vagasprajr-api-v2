@@ -13,7 +13,7 @@ func GetNewRecruiterOrCompanyUserEmail(validationToken string, email string) str
 	`+os.Getenv("BASE_UI_HOST")+`/confirmacao?token=` + validationToken + `
 
 	Atenciosamente,
-	Equipe Vagas para Jr.
+	Equipe @vagasprajr.
 	contato@vagasprajr.com.br
 	`
 }
@@ -31,7 +31,7 @@ func GetCompanyRecruiterAskingLinksEmail() string {
 	Estamos ansiosos para ter você conosco postando vagas para os nossos candidatos.
 
 	Atenciosamente,
-	Equipe Vagas para Jr.
+	Equipe @vagasprajr.
 	contato@vagasprajr.com.br
 	`
 }
@@ -47,7 +47,7 @@ func GetWelcomeEmail(validationToken string) string {
 	`+os.Getenv("BASE_UI_HOST")+`/confirmacao?token=` + validationToken + `
 
 	Atenciosamente,
-	Equipe Vagas para Jr.
+	Equipe @vagasprajr.
 	contato@vagasprajr.com.br	`
 }
 
@@ -60,6 +60,6 @@ func ReceiptSend(userEmail string, receipt string) string {
 	Recibo: ` + receipt + `
 
 	Atenciosamente,
-	Equipe Vagas para Jr.
+	Equipe @vagasprajr.
 	contato@vagasprajr.com.br	`
 }

@@ -28,3 +28,16 @@ type UserProfileResponse struct {
 	IdiomsInfo           []users.UserIdiomInfo      `json:"idioms_info"`
 	IsPublicForRecruiter bool                        `json:"is_public_for_recruiter"`
 }
+
+type ResetPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+type VerifyResestTokenRequest struct {
+	Token string `json:"token"`
+}
+
+type ResetPasswordRequestBody struct {
+	Token    string `json:"token"`
+	Password string `json:"password"`
+}

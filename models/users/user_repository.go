@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
-	"os"
+	"os"	
 	"strings"
 	"time"
 
@@ -428,4 +428,32 @@ func GetUserByValidationToken(token string) (User, error) {
 	}
 
 	return result, nil	
+}
+
+func UpdateValidationToken(user User) error {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{Key: "_id", Value: user.Id}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "validation_token", Value: user.ValidationToken}}}}
+
+	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil	
 }

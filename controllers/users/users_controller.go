@@ -3,11 +3,13 @@ package users
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users/tokens"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/services/emails"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -222,6 +224,71 @@ func RefreshToken(context *gin.Context) {
 func LogOut(context *gin.Context) {			
 	tokens.DeleteTokenCookie(context)
 	context.JSON(http.StatusOK, gin.H{"message": "Logout realizado com sucesso"})
+}
+
+func ResetPassword(context *gin.Context) {
+
+}
+
+func VerifyRessetToken(context *gin.Context) {
+	
+	var request VerifyResestTokenRequest
+	context.BindJSON(&request)
+
+	if request.Token == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Token não informado"})
+	}
+
+	user, err := users.GetUserByValidationToken(request.Token)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.Email == "" {
+		context.JSON(http.StatusNotFound, gin.H{"error": "Token inválido"})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"success": true})
+}
+
+func RequestPasswordReset(context *gin.Context) {
+	
+	var request ResetPasswordRequest
+
+	context.BindJSON(&request)
+
+	if request.Email == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "E-mail não informado"})
+	}
+
+	user, err := users.GetUserByEmail(request.Email)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.Email == "" {
+		context.JSON(http.StatusOK, gin.H{"success": true})
+		return
+	}
+
+	user.ValidationToken = tokens.GenerateValidationToken()	
+	err = users.UpdateValidationToken(user)
+
+	if (err != nil) {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	SendRecoveryEmail(user)
+}
+
+func SendRecoveryEmail(user users.User) {
+	go emails.SendEmail("", []string{user.Email}, "Alteração de senha", "Olá, "+user.FirstName+" "+user.LastName+".\n\n"+"Para alterar sua senha, acesse o link abaixo:\n\n"+os.Getenv("BASE_UI_HOST")+"/alterar-senha?token="+user.ValidationToken+"\n\n"+"Atenciosamente,\n\n"+"Equipe @vagasprajr")
 }
 
 func GetUser(context *gin.Context) {

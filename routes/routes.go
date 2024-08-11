@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/shorturls"
@@ -48,6 +47,14 @@ func RegisterRoutes(server *gin.Engine) {
 	admin.Use(authentication.AuthMiddleware(), authorization.AuthorizationMiddleware([]string{controllers.ADMIN}))
 	admin.GET("/users", users.GetUsers)
 
+	// Authentication	
+	server.POST("/auth/login", users.Login)	
+	server.GET("/auth/logout", users.LogOut)	
+	server.POST("/auth/forgotten-password", users.RequestPasswordReset)	
+	server.POST("/auth/verify-reset-token", users.VerifyRessetToken)
+	server.POST("/auth/reset-password", users.ResetPassword)	
+	server.POST("/oauth/google", google.OAuthGoogle)
+	
 	// Jobs
 	server.POST("/jobs/search", jobs.GetJobs)
 	server.POST("/jobs/aggregated-values", jobs.GetAggregatedJobsValues)
@@ -59,11 +66,6 @@ func RegisterRoutes(server *gin.Engine) {
 	server.GET("/r/:code", shorturls.RedirectToOriginalAdURL)
 	// Redirect to the job's original URL from the short URL
 	server.GET("/j/:code", shorturls.RedirectToOriginalJobUrl)
-
-	// Users	
-	server.POST("/auth/login", users.Login)	
-	server.GET("/auth/logout", users.LogOut)	
-	server.POST("/oauth/google", google.OAuthGoogle)
 
 	// Singn Up
 	server.POST("/auth/signup", users.SignUp)
