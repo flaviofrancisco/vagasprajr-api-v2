@@ -227,7 +227,44 @@ func LogOut(context *gin.Context) {
 }
 
 func ResetPassword(context *gin.Context) {
+	var request ResetPasswordRequestBody
+	context.BindJSON(&request)
 
+	if request.Token == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Token não informado"})
+	}
+
+	if request.Password == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Senha não informada"})
+	}
+
+	user, err := users.GetUserByValidationToken(request.Token)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.Email == "" {
+		context.JSON(http.StatusNotFound, gin.H{"error": "Token inválido"})
+		return
+	}
+
+	err = user.UpdatePassword(request.Password)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = user.ResetValidationToken()
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"success": true})
 }
 
 func VerifyRessetToken(context *gin.Context) {
