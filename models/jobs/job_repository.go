@@ -242,6 +242,37 @@ func GetOriginalURL(shortUrl string) (string, error) {
 	return result.Url, nil
 }
 
+func UpdateJobClicks(shortUrl string) error {
+
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+
+	client, err := models.Connect()
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return err
+	}
+
+	collection := client.Database(mongodb_database).Collection("jobs")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err = collection.UpdateOne(ctx, bson.M{"job_short_url": shortUrl}, bson.M{"$inc": bson.M{"qty_clicks": 1}})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func appendCondition(andConditions []bson.M, field string, value string) []bson.M {
     if value != "" {
         andConditions = append(andConditions, bson.M{field: bson.M{"$regex": value, "$options": "i"}})

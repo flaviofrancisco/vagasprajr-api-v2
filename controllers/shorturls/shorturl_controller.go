@@ -20,7 +20,19 @@ func GetOriginalURL(context *gin.Context) {
 	}
 
 	shortUrl := os.Getenv("BASE_UI_HOST") + `/go/` + code
-	originalUrl, _ := jobs.GetOriginalURL(shortUrl)
+	originalUrl, err := jobs.GetOriginalURL(shortUrl)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Problem getting the original URL"})
+		return
+	}
+
+	err = jobs.UpdateJobClicks(shortUrl)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Problem updating the advertisement clicks"})
+		return
+	}
 
 	// Create a map to hold the original URL
 	response := make(map[string]string)
@@ -78,8 +90,8 @@ func RedirectToOriginalJobUrl(context *gin.Context) {
 		return
 	}
 
-	err = promotions.UpdateAdvertisementClicks(shortUrl)
-
+	err = jobs.UpdateJobClicks(shortUrl)
+	
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Problem updating the advertisement clicks"})
 		return
