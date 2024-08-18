@@ -74,5 +74,7 @@ func RegisterRoutes(server *gin.Engine) {
 	// Token
 	server.GET("/auth/refresh-token", users.RefreshToken)
 
+	// Users
 	server.GET("/users/:id", authentication.AuthMiddleware(), users.GetUser)
+	server.GET("/users/profile", authentication.AuthMiddleware(), users.GetUserProfile)
 }

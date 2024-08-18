@@ -328,6 +328,17 @@ func SendRecoveryEmail(user users.User) {
 	go emails.SendEmail("", []string{user.Email}, "Alteração de senha", "Olá, "+user.FirstName+" "+user.LastName+".\n\n"+"Para alterar sua senha, acesse o link abaixo:\n\n"+os.Getenv("BASE_UI_HOST")+"/alterar-senha?token="+user.ValidationToken+"\n\n"+"Atenciosamente,\n\n"+"Equipe @vagasprajr")
 }
 
+func GetUserProfile(context *gin.Context) {
+	currentUser, context_error := context.Get("userInfo")
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+	
+	
+}
+
 func GetUser(context *gin.Context) {
 	
 	currentUser, context_error := context.Get("userInfo")	
