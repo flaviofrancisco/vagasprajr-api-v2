@@ -26,7 +26,8 @@ type UserProfileResponse struct {
 	JobPreference        users.UserJobPreference    `json:"job_preferences"`
 	DiversityInfo        users.UserDiversityInfo    `json:"diversity_info"`
 	IdiomsInfo           []users.UserIdiomInfo      `json:"idioms_info"`
-	IsPublicForRecruiter bool                        `json:"is_public_for_recruiter"`
+	IsPublicForRecruiter bool                       `json:"is_public_for_recruiter"`
+	ProfileImageUrl 	 string			            `json:"profile_image_url"`
 }
 
 type ResetPasswordRequest struct {

@@ -329,17 +329,6 @@ func SendRecoveryEmail(user users.User) {
 }
 
 func GetUserProfile(context *gin.Context) {
-	currentUser, context_error := context.Get("userInfo")
-
-	if !context_error {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
-		return
-	}
-	
-	
-}
-
-func GetUser(context *gin.Context) {
 	
 	currentUser, context_error := context.Get("userInfo")	
 

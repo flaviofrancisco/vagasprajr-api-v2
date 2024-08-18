@@ -28,7 +28,7 @@ func RegisterRoutes(server *gin.Engine) {
     server.Use(cors.New(cors.Config{
         AllowOrigins:     allowedOrigins,
         AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
         ExposeHeaders:    []string{"Content-Length"},
         AllowCredentials: true,
         MaxAge:           12 * time.Hour,
@@ -74,7 +74,6 @@ func RegisterRoutes(server *gin.Engine) {
 	// Token
 	server.GET("/auth/refresh-token", users.RefreshToken)
 
-	// Users
-	server.GET("/users/:id", authentication.AuthMiddleware(), users.GetUser)
+	// Users	
 	server.GET("/users/profile", authentication.AuthMiddleware(), users.GetUserProfile)
 }

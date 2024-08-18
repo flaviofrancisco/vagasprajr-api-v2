@@ -24,7 +24,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			}
 		}
 
-		if token == "" || err != nil {
+		if token == "" && err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token not found"})
 		}
 		
