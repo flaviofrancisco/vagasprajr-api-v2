@@ -524,7 +524,12 @@ func (user *User) UpdateUserIntro() error {
 	filter := bson.D{{Key: "_id", Value: user.Id}}
 
 	update := bson.D{{Key: "$set", 
-	Value: bson.D{{Key: "first_name", Value: user.FirstName}, {Key: "last_name", Value: user.LastName}, {Key: "city", Value: user.City}, {Key: "state", Value: user.State}}}}
+	Value: bson.D{
+		{Key: "first_name", Value: user.FirstName}, 
+		{Key: "last_name", Value: user.LastName}, 
+		{Key: "city", Value: user.City}, {Key: "state", Value: user.State}}},
+		{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
+	}
 	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
 
 	if err != nil {

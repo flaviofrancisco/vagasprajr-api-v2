@@ -414,7 +414,7 @@ func UpdateUser(context *gin.Context) {
 	user.LastName = request.LastName
 	user.City = request.City
 	user.State = request.State
-
+		
 	err = user.UpdateUserIntro()
 
 	if err != nil {
