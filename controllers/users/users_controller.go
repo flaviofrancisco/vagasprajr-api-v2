@@ -378,6 +378,84 @@ func GetUserProfile(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func UpdateUser(context *gin.Context) {
+	
+	currentUser, context_error := context.Get("userInfo")	
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+
+	userInfo := currentUser.(users.UserInfo)
+	
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
+		return
+	}
+
+	user, err := users.GetUserById(userInfo.Id)
+	
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if userInfo.Id != user.Id {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+
+	var request PatchUserIntroRequest
+	context.BindJSON(&request)
+
+	user.Id = userInfo.Id
+	user.FirstName = request.FirstName
+	user.LastName = request.LastName
+	user.City = request.City
+	user.State = request.State
+
+	err = user.UpdateUserIntro()
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err = users.GetUserById(userInfo.Id)
+	
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := UserProfileResponse {
+		Id: user.Id.Hex(),
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+		Email: user.Email,
+		UserName: user.UserName,
+		AboutMe: user.AboutMe,
+		City: user.City,
+		State: user.State,
+		Links: user.Links,
+		IsEmailConfirmed: user.IsEmailConfirmed,
+		Roles: user.Roles,
+		Experiences: user.Experiences,
+		IsPublic: user.IsPublic,
+		ProfileViews: user.ProfileViews,
+		TechExperiences: user.TechExperiences,
+		Educations: user.Educations,
+		Certifications: user.Certifications,
+		JobPreference: user.JobPreference,
+		DiversityInfo: user.DiversityInfo,
+		IdiomsInfo: user.IdiomsInfo,
+		IsPublicForRecruiter: user.IsPublicForRecruiter,
+	}
+
+	context.JSON(http.StatusOK, response)
+}
+
 func GetUsers(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "GetUsers"})
 }

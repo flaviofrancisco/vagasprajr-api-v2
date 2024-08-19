@@ -5,6 +5,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type PatchUserIntroRequest struct {
+	Id                   string                      `json:"id"`	
+	FirstName            string                      `json:"first_name"`
+	LastName             string                      `json:"last_name"`
+	City                 string                      `json:"city"`
+	State                string                      `json:"state"`
+}
+
 type UserProfileResponse struct {
 	Id                   string                      `json:"id"`
 	Email                string                      `json:"email"`
