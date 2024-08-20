@@ -506,5 +506,23 @@ func UpdateUser(context *gin.Context) {
 }
 
 func GetUsers(context *gin.Context) {
-	context.JSON(http.StatusOK, gin.H{"message": "GetUsers"})
+
+	userRole := context.MustGet("userRole").(string)
+
+	if userRole != "admin" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+
+	var request users.UsersRequest
+	context.BindJSON(&request)
+
+	result, err := users.GetUsers(request)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+		
+	context.JSON(http.StatusOK, result)	
 }

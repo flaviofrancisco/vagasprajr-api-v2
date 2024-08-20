@@ -28,6 +28,7 @@ func AuthorizationMiddleware(roles []string) gin.HandlerFunc {
 		for _, role := range roles {
 			for _, userRole := range userRoles {
 				if role == userRole {
+					c.Set("userRole", userRole)	
 					c.Next()
 					return
 				}

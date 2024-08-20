@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/scrypt"
 )
 
@@ -428,6 +429,69 @@ func GetUserByValidationToken(token string) (User, error) {
 	}
 
 	return result, nil	
+}
+
+func GetUsers(filter UsersRequest) (UsersPaginatedResult, error) {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return UsersPaginatedResult{}, err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	var users []User
+
+	page:= filter.Page
+	perPage:= filter.PageSize
+
+	if (page - 1) < 0 {
+		page = 1
+	}
+
+	skip := (page - 1) * perPage
+
+	if filter.Sort == "" {
+		filter.Sort = "created_at"
+	}
+
+	orderDirection := -1
+
+	if filter.IsAscending {
+		orderDirection = 1
+	}
+
+	options := options.Find().SetSort(bson.M{filter.Sort: orderDirection}).SetSkip(int64(skip)).SetLimit(int64(perPage))
+
+	cursor, err := db.Collection("users").Find(context.Background(), filter.getFilter(), options)
+
+	if err != nil {
+		return UsersPaginatedResult{}, err
+	}
+
+	if err = cursor.All(context.Background(), &users); err != nil {
+		return UsersPaginatedResult{}, err
+	}
+
+	total, err := db.Collection("users").CountDocuments(context.Background(), filter.getFilter())
+
+	return UsersPaginatedResult{
+		Total:   total,
+		Page:    page,
+		PerPage: perPage,
+		Data:    users,
+	}, nil		
+}
+
+func (filter *UsersRequest) getFilter() bson.D {
+	return bson.D{}	
 }
 
 func UpdateValidationToken(user User) error {
