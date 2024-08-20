@@ -378,6 +378,53 @@ func GetUserProfile(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func IsAuthorized(context *gin.Context) {
+	currentUser, context_error := context.Get("userInfo")
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+
+	userInfo := currentUser.(users.UserInfo)
+
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
+		return
+	}
+
+	user, err := users.GetUserById(userInfo.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.Email == "" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não encontrado"})
+		return
+	}
+
+	if userInfo.Id != user.Id {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+	
+	var request AuthorizeRequest
+	context.BindJSON(&request)
+
+	isAuthorized := false
+
+	for _, role := range request.Roles {
+		if user.IsAuthorized(role) {
+			isAuthorized = true
+			break
+		}
+	}
+
+	context.JSON(http.StatusOK, gin.H{"isAuthorized": isAuthorized})
+}
+
 func UpdateUser(context *gin.Context) {
 	
 	currentUser, context_error := context.Get("userInfo")	
@@ -414,6 +461,7 @@ func UpdateUser(context *gin.Context) {
 	user.LastName = request.LastName
 	user.City = request.City
 	user.State = request.State
+	user.AboutMe = request.AboutMe
 	user.Links = request.Links
 		
 	err = user.Update()

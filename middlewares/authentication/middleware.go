@@ -17,6 +17,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		if token == "" {
 
 			token = c.GetHeader("Authorization")
+
+			if token == "" && len(token) < 7 {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token not found"})				
+			}
+
 			token = token[7:]
 			
 			if token == "" {

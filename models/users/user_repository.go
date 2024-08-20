@@ -504,6 +504,21 @@ func (user *User) ResetValidationToken() error {
 	return nil
 }	
 
+func (user *User) IsAuthorized(roles string) bool {
+	
+	if user.Roles == nil {
+		return false
+	}
+
+	for _, role := range user.Roles {
+		if role.Hex() == roles {
+			return true
+		}
+	}
+
+	return false	
+}
+
 func (user *User) Update() error {
 	
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
@@ -532,6 +547,7 @@ func (user *User) Update() error {
 				{Key: "city", Value: user.City}, {Key: "state", Value: user.State},
 				{Key: "links", Value: user.Links},
 				{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
+				{Key: "about_me", Value: user.AboutMe},
 			},
 		},		
 	}

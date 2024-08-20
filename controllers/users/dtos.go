@@ -5,12 +5,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type AuthorizeRequest struct {
+	Roles []string `json:"roles"`
+}
+
 type UpdateUserRequest struct {
 	Id                   string                      `json:"id"`	
 	FirstName            string                      `json:"first_name"`
 	LastName             string                      `json:"last_name"`
 	City                 string                      `json:"city"`
 	State                string                      `json:"state"`
+	AboutMe              string               		 `json:"about_me"`
 	Links                []users.UserLink            `json:"links"`
 }
 

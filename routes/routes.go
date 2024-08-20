@@ -49,10 +49,11 @@ func RegisterRoutes(server *gin.Engine) {
 
 	// Authentication	
 	server.POST("/auth/login", users.Login)	
-	server.GET("/auth/logout", users.LogOut)	
+	server.GET("/auth/logout", users.LogOut)		
 	server.POST("/auth/forgotten-password", users.RequestPasswordReset)	
 	server.POST("/auth/verify-reset-token", users.VerifyRessetToken)
 	server.POST("/auth/reset-password", users.ResetPassword)	
+	server.POST("/auth/authorize", authentication.AuthMiddleware(), users.IsAuthorized)	
 	server.POST("/oauth/google", google.OAuthGoogle)
 	
 	// Jobs
