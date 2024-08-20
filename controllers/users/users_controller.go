@@ -406,7 +406,7 @@ func UpdateUser(context *gin.Context) {
 		return
 	}
 
-	var request PatchUserIntroRequest
+	var request UpdateUserRequest
 	context.BindJSON(&request)
 
 	user.Id = userInfo.Id
@@ -414,8 +414,9 @@ func UpdateUser(context *gin.Context) {
 	user.LastName = request.LastName
 	user.City = request.City
 	user.State = request.State
+	user.Links = request.Links
 		
-	err = user.UpdateUserIntro()
+	err = user.Update()
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

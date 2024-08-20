@@ -504,7 +504,7 @@ func (user *User) ResetValidationToken() error {
 	return nil
 }	
 
-func (user *User) UpdateUserIntro() error {
+func (user *User) Update() error {
 	
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
@@ -530,6 +530,7 @@ func (user *User) UpdateUserIntro() error {
 				{Key: "first_name", Value: user.FirstName}, 
 				{Key: "last_name", Value: user.LastName}, 
 				{Key: "city", Value: user.City}, {Key: "state", Value: user.State},
+				{Key: "links", Value: user.Links},
 				{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
 			},
 		},		
