@@ -173,8 +173,11 @@ type Filter struct {
 }
 
 type Field struct {
-	Name string `bson:"name" json:"name"`
-	Value string `bson:"value" json:"value"`
+	Name 		string `bson:"name" json:"name"`
+	Value 		string `bson:"value" json:"value"`
+	Type 		string `bson:"type" json:"type"`
+	MinValue 	string `bson:"min_value" json:"min_value"`
+	MaxValue 	string `bson:"max_value" json:"max_value"`
 }
 
 type UsersPaginatedResult struct {
