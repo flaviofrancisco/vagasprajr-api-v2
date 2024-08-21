@@ -2,6 +2,7 @@ package cache
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/go-redis/redis"
@@ -21,6 +22,7 @@ func NewRedis() (Redis, error) {
     
     _, err := client.Ping().Result()
     if err != nil {
+        fmt.Println(err.Error())
         return Redis{}, errors.New("failed to connect to Redis")
     }
 
