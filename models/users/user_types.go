@@ -25,6 +25,24 @@ type UserInfo struct {
 	UserName        string            `json:"user_name"`
 	ProfileImageUrl string            `json:"profile_image_url"`
 	Provider        string            `json:"provider"`
+	City            string            `bson:"city" json:"city"`
+	State           string            `bson:"state" json:"state"`
+	CreatedAt            primitive.DateTime   `bson:"created_at" json:"created_at"`
+	LastUpdate           primitive.DateTime   `bson:"last_update" json:"last_update"`
+	LastLogin            primitive.DateTime   `bson:"last_login" json:"last_login"`
+}
+
+type UserView struct {
+	Id              primitive.ObjectID 		  `bson:"_id" json:"_id"`
+	FirstName            string               `bson:"first_name" json:"first_name"`
+	LastName             string               `bson:"last_name" json:"last_name"`
+	Email                string               `bson:"email" json:"email"`
+	UserName             string               `bson:"user_name" json:"user_name"`
+	City                 string               `bson:"city" json:"city"`
+	State                string               `bson:"state" json:"state"`
+	CreatedAt            primitive.DateTime   `bson:"created_at" json:"created_at"`	
+	LastLogin            primitive.DateTime   `bson:"last_login" json:"last_login"`
+	LastUpdate           primitive.DateTime   `bson:"last_update" json:"last_update"`
 }
 
 type User struct {
@@ -184,5 +202,5 @@ type UsersPaginatedResult struct {
 	Total   int64 
 	Page    int
 	PerPage int
-	Data    []User
+	Data    []UserView
 }

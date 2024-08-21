@@ -448,8 +448,6 @@ func GetUsers(filter UsersRequest) (UsersPaginatedResult, error) {
 
 	db := client.Database(mongodb_database)
 
-	var users []User
-
 	page:= filter.Page
 	perPage:= filter.PageSize
 
@@ -476,6 +474,8 @@ func GetUsers(filter UsersRequest) (UsersPaginatedResult, error) {
 	if err != nil {
 		return UsersPaginatedResult{}, err
 	}
+
+	var users []UserView
 
 	if err = cursor.All(context.Background(), &users); err != nil {
 		return UsersPaginatedResult{}, err
@@ -535,8 +535,11 @@ func (filter *UsersRequest) getFilter() bson.M {
 			andConditions = append(andConditions, filterOperator)
 		}
 	}
+
+	if len(andConditions) != 0 {
+		returnFilter["$and"] = andConditions
+	}
 	
-	returnFilter["$and"] = andConditions
 	return returnFilter
 }
 
