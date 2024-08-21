@@ -3,6 +3,7 @@ package authentication
 import (
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users/tokens"
@@ -10,9 +11,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+const (
+	TOKEN_NAME = "vagasprajr_token"
+)
+
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		token, err := c.Cookie("token")
+		token, err := c.Cookie(TOKEN_NAME)
 
 		if token == "" {
 
@@ -41,12 +46,19 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		key = []byte(os.Getenv("JWT_SECRET"))
 
+        // Check if the token is malformed
+        parts := strings.Split(token, ".")
+        if len(parts) != 3 {
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Malformed token"})
+            return
+        }		
+
 		t, err = jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 			return key, nil
 		})
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error parsing the token" + err.Error() + "\n Toke:" + token}) 
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error parsing the token. " + err.Error() + " Token:" + token}) 
 		}
 
 		claim = t.Claims.(jwt.MapClaims)
