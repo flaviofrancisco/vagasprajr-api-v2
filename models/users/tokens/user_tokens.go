@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
 
@@ -262,6 +263,15 @@ func (userToken *UserToken) SetTokenCookie(c *gin.Context) {
         secure,
         true,
     )
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:   TOKEN_NAME,
+		Value:  userToken.Token,
+		Expires: userToken.ExpirationDate.Time().UTC(),
+		Secure: secure,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,		
+	})
 }
 
 func DeleteTokenCookie(c *gin.Context) {
@@ -273,8 +283,17 @@ func DeleteTokenCookie(c *gin.Context) {
 		"/",
 		os.Getenv("COOKIE_DOMAIN"),
 		secure,
-		true,
+		true,		
 	)
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:   TOKEN_NAME,
+		Value:  "",
+		Expires: time.Now().UTC(),
+		Secure: secure,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+	})
 }
 
 func SaveRefreshToken(userInfo users.UserInfo) error {
