@@ -46,7 +46,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		})
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error parsing the token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error parsing the token" + err.Error() + "\n Toke:" + token}) 
 		}
 
 		claim = t.Claims.(jwt.MapClaims)
