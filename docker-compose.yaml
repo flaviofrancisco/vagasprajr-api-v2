@@ -17,6 +17,25 @@ services:
     networks:
       - default
       - vagasprajr_network
+  cache:
+    container_name: redis
+    hostname: redis
+    image: redis:alpine
+    env_file:
+      - .env    
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf    
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}      
+    ports:
+      - 6380:6379
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - default
+      - vagasprajr_network      
+
 
 networks:
   vagasprajr_network:
