@@ -16,13 +16,13 @@ func AuthorizationMiddleware(roles []string) gin.HandlerFunc {
 		userInfo := c.MustGet("userInfo").(users.UserInfo)
 
 		if userInfo.Id.IsZero() {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
+			c.AbortWithStatusJSON(401, gin.H{"error": "Unable to get user information"})
 		}
 
 		userRoles, err := users.GetUserRoles(userInfo.Id)
 
 		if err != nil {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
+			c.AbortWithStatusJSON(401, gin.H{"error": "Unable to get user roles"})
 		}
 
 		for _, role := range roles {
@@ -35,7 +35,7 @@ func AuthorizationMiddleware(roles []string) gin.HandlerFunc {
 			}
 		}
 
-		c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})	
+		c.AbortWithStatusJSON(401, gin.H{"error": "User does not have the necessary permissions"})	
 		
 	}
 }
