@@ -29,4 +29,4 @@ go.work
 *mongodb.js
 *launch.json
 
-/redis/*
+redis/redis.conf
