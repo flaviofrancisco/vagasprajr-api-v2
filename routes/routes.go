@@ -46,6 +46,7 @@ func RegisterRoutes(server *gin.Engine) {
 	admin := server.Group("/admin")
 	admin.Use(authentication.AuthMiddleware(), authorization.AuthorizationMiddleware([]string{controllers.ADMIN}))
 	admin.POST("/users", users.GetUsers)
+	admin.GET("/users/:id", users.GetUser)
 
 	// Authentication	
 	server.POST("/auth/login", users.Login)	

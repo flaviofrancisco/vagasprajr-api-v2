@@ -328,6 +328,63 @@ func SendRecoveryEmail(user users.User) {
 	go emails.SendEmail("", []string{user.Email}, "Alteração de senha", "Olá, "+user.FirstName+" "+user.LastName+".\n\n"+"Para alterar sua senha, acesse o link abaixo:\n\n"+os.Getenv("BASE_UI_HOST")+"/alterar-senha?token="+user.ValidationToken+"\n\n"+"Atenciosamente,\n\n"+"Equipe @vagasprajr")
 }
 
+func GetUser(context *gin.Context) {
+	
+	userRole := context.MustGet("userRole").(string)
+
+	if userRole != "admin" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+
+	userId := context.Param("id")
+
+	if userId == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Id do usuário não informado"})
+		return
+	}
+
+	objectId, err := primitive.ObjectIDFromHex(userId)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Id do usuário inválido"})
+		return
+	}
+
+	user, err := users.GetUserById(objectId)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	response := UserProfileResponse {
+		Id: user.Id.Hex(),
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+		Email: user.Email,
+		UserName: user.UserName,
+		AboutMe: user.AboutMe,
+		City: user.City,
+		State: user.State,
+		Links: user.Links,
+		IsEmailConfirmed: user.IsEmailConfirmed,
+		Roles: user.Roles,
+		Experiences: user.Experiences,
+		IsPublic: user.IsPublic,
+		ProfileViews: user.ProfileViews,
+		TechExperiences: user.TechExperiences,
+		Educations: user.Educations,
+		Certifications: user.Certifications,
+		JobPreference: user.JobPreference,
+		DiversityInfo: user.DiversityInfo,
+		IdiomsInfo: user.IdiomsInfo,
+		IsPublicForRecruiter: user.IsPublicForRecruiter,
+	}
+
+	context.JSON(http.StatusOK, response)
+}
+
 func GetUserProfile(context *gin.Context) {
 	
 	currentUser, context_error := context.Get("userInfo")	
