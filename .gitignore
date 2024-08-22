@@ -28,4 +28,5 @@ go.work
 .env
 *mongodb.js
 *launch.json
+
 /redis/*
