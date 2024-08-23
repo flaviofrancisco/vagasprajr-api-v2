@@ -17,7 +17,7 @@ type AuthResponse struct {
 }
 
 type UserInfo struct {
-	Id              	primitive.ObjectID 		`bson:"_id" json:"_id"`
+	Id              	primitive.ObjectID 		`bson:"_id" json:"id"`
 	FirstName       	string            		`bson:"first_name" json:"first_name"`
 	LastName        	string            		`bson:"last_name" json:"last_name"`
 	Email           	string            		`bson:"email" json:"email"`
@@ -30,11 +30,15 @@ type UserInfo struct {
 	CreatedAt           primitive.DateTime   	`bson:"created_at" json:"created_at"`
 	LastUpdate          primitive.DateTime   	`bson:"last_update" json:"last_update"`
 	LastLogin           primitive.DateTime   	`bson:"last_login" json:"last_login"`
-	Experices			[]UserExperice 			`bson:"experiences" json:"experiences"`			
+	Experices			[]UserExperice 			`bson:"experiences" json:"experiences"`
+	Educations			[]UserEducation 		`bson:"educations" json:"educations"`
+	IdiomsInfo			[]UserIdiomInfo 		`bson:"idioms_info" json:"idioms_info"`
+	UserTechExperiences []UserTechExperience 	`bson:"tech_experiences" json:"tech_experiences"`			
+	UserCertifications  []UserCertification 	`bson:"certifications" json:"certifications"`
 }
 
 type UserView struct {
-	Id              primitive.ObjectID 		  `bson:"_id" json:"_id"`
+	Id              primitive.ObjectID 		  `bson:"_id" json:"id"`
 	FirstName            string               `bson:"first_name" json:"first_name"`
 	LastName             string               `bson:"last_name" json:"last_name"`
 	Email                string               `bson:"email" json:"email"`
@@ -47,7 +51,7 @@ type UserView struct {
 }
 
 type User struct {
-	Id                   primitive.ObjectID   `bson:"_id" json:"_id"`
+	Id                   primitive.ObjectID   `bson:"_id" json:"id"`
 	FirstName            string               `bson:"first_name" json:"first_name"`
 	LastName             string               `bson:"last_name" json:"last_name"`
 	City                 string               `bson:"city" json:"city"`
