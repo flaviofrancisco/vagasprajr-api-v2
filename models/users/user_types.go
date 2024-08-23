@@ -10,26 +10,27 @@ type AuthRequestBody struct {
 }
 
 type AuthResponse struct {
-	AccessToken 			string   `json:"access_token"`
-	Success     			bool     `json:"success"`
-	UserInfo    			UserInfo `json:"user_info"`
-	ExpirationDate 			primitive.DateTime `json:"expiration_date"`		
+	AccessToken 			string   			`json:"access_token"`
+	Success     			bool     			`json:"success"`
+	UserInfo    			UserInfo 			`json:"user_info"`
+	ExpirationDate 			primitive.DateTime 	`json:"expiration_date"`		
 }
 
 type UserInfo struct {
-	Id              primitive.ObjectID `bson:"_id" json:"_id"`
-	FirstName       string            `json:"first_name"`
-	LastName        string            `json:"last_name"`
-	Email           string            `json:"email"`
-	Links           []UserLink 		  `json:"links"`
-	UserName        string            `json:"user_name"`
-	ProfileImageUrl string            `json:"profile_image_url"`
-	Provider        string            `json:"provider"`
-	City            string            `bson:"city" json:"city"`
-	State           string            `bson:"state" json:"state"`
-	CreatedAt            primitive.DateTime   `bson:"created_at" json:"created_at"`
-	LastUpdate           primitive.DateTime   `bson:"last_update" json:"last_update"`
-	LastLogin            primitive.DateTime   `bson:"last_login" json:"last_login"`
+	Id              	primitive.ObjectID 		`bson:"_id" json:"_id"`
+	FirstName       	string            		`bson:"first_name" json:"first_name"`
+	LastName        	string            		`bson:"last_name" json:"last_name"`
+	Email           	string            		`bson:"email" json:"email"`
+	Links           	[]UserLink 		  		`bson:"links" json:"links"`
+	UserName        	string            		`bson:"user_name" json:"user_name"`
+	ProfileImageUrl 	string            		`bson:"profile_image_url" json:"profile_image_url"`
+	Provider        	string            		`bson:"provider" json:"provider"`
+	City            	string            		`bson:"city" json:"city"`
+	State           	string            		`bson:"state" json:"state"`
+	CreatedAt           primitive.DateTime   	`bson:"created_at" json:"created_at"`
+	LastUpdate          primitive.DateTime   	`bson:"last_update" json:"last_update"`
+	LastLogin           primitive.DateTime   	`bson:"last_login" json:"last_login"`
+	Experices			[]UserExperice 			`bson:"experiences" json:"experiences"`			
 }
 
 type UserView struct {
