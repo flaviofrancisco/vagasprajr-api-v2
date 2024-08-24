@@ -6,6 +6,7 @@ import (
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/jobs"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/shopping"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/shorturls"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/controllers/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares/authentication"
@@ -68,6 +69,9 @@ func RegisterRoutes(server *gin.Engine) {
 	server.GET("/r/:code", shorturls.RedirectToOriginalAdURL)
 	// Redirect to the job's original URL from the short URL
 	server.GET("/j/:code", shorturls.RedirectToOriginalJobUrl)
+
+	//Shopping
+	server.GET("/shopping/ad-references", shopping.GetAdReferences)
 
 	// Singn Up
 	server.POST("/auth/signup", users.SignUp)
