@@ -30,3 +30,4 @@ go.work
 *launch.json
 
 redis/redis.conf
+__debug_bin*
