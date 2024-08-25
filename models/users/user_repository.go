@@ -657,10 +657,12 @@ func (user *User) Update() error {
 			Value: bson.D{
 				{Key: "first_name", Value: user.FirstName}, 
 				{Key: "last_name", Value: user.LastName}, 
-				{Key: "city", Value: user.City}, {Key: "state", Value: user.State},
+				{Key: "city", Value: user.City}, 
+				{Key: "state", Value: user.State},
 				{Key: "links", Value: user.Links},
 				{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
 				{Key: "about_me", Value: user.AboutMe},
+				{Key: "tech_experiences", Value: user.TechExperiences},
 			},
 		},		
 	}

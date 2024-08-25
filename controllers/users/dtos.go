@@ -17,6 +17,8 @@ type UpdateUserRequest struct {
 	State                string                      `json:"state"`
 	AboutMe              string               		 `json:"about_me"`
 	Links                []users.UserLink            `json:"links"`
+	TechExperiences      []users.UserTechExperience  `json:"tech_experiences"`
+	Experiences          []users.UserExperice        `json:"experiences"`
 }
 
 type UserProfileResponse struct {

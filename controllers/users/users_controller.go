@@ -519,6 +519,8 @@ func UpdateUser(context *gin.Context) {
 	user.State = request.State
 	user.AboutMe = request.AboutMe
 	user.Links = request.Links
+	user.Experiences = request.Experiences
+	user.TechExperiences = request.TechExperiences
 		
 	err = user.Update()
 
