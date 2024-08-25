@@ -142,13 +142,6 @@ func OAuthGoogle(context *gin.Context) {
 			return
 		}
 
-
-
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
 		if googleUserInfo.Verified && !currentUser.IsEmailConfirmed {			
 			err := currentUser.ConfirmEmail()
 			if err != nil {
@@ -160,38 +153,39 @@ func OAuthGoogle(context *gin.Context) {
 
 	currentUser.UpdateLastLogin()
 
-	var userInfo users.UserInfo
-
-	userInfo.Email = strings.ToLower(currentUser.Email)
-	userInfo.FirstName = currentUser.FirstName
-	userInfo.LastName = currentUser.LastName
-	userInfo.Links = currentUser.Links
-	userInfo.Provider = currentUser.Provider
-	userInfo.UserName = currentUser.UserName
-	userInfo.Id = currentUser.Id
+	userInfo := users.UserTokenInfo{
+		Email: strings.ToLower(currentUser.Email),
+		FirstName: currentUser.FirstName,
+		LastName: currentUser.LastName,				
+		UserName: currentUser.UserName,
+		Id: currentUser.Id,
+	}
 		
-	userToken := tokens.UserToken{}	
+	userToken := tokens.UserToken{
+		Id: currentUser.Id,
+	}	
 	err = userToken.SetToken(userInfo)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	}
-
-	result:= users.AuthResponse{
-		AccessToken: userToken.Token,
-		Success: true,
-		UserInfo: userInfo,
-		ExpirationDate: userToken.ExpirationDate,		
-	}
+	}	
 
 	userToken.SetTokenCookie(context)
-
 	err = tokens.SaveRefreshToken(userInfo)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}	
+
+	tokenExpirationDate := userToken.ExpirationDate.Time().UTC()
+
+	result:= users.AuthResponse{
+		AccessToken: userToken.Token,
+		Success: true,
+		UserInfo: userInfo,
+		ExpirationDate: primitive.NewDateTimeFromTime(tokenExpirationDate),		
 	}
 
 	context.JSON(http.StatusOK, result)

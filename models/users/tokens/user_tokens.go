@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
 
@@ -49,7 +50,7 @@ func getExpirationRefreshToken() time.Time {
 }
 
 // SetToken - Set the token for the user with a default expiration time
-func (userToken *UserToken) SetToken(userInfo users.UserInfo) (error)  {
+func (userToken *UserToken) SetToken(userInfo users.UserTokenInfo) (error)  {
 
 	expirationDateTime := getExpirationToken()
 	err := userToken.SetAuthenticationToken(userInfo, expirationDateTime)
@@ -62,7 +63,7 @@ func (userToken *UserToken) SetToken(userInfo users.UserInfo) (error)  {
 }
 
 // SetAuthenticationToken - Set the authentication token for the user with an expiration time
-func (userToken *UserToken) SetAuthenticationToken(userInfo users.UserInfo, expirationDateTime time.Time) (error) {
+func (userToken *UserToken) SetAuthenticationToken(userInfo users.UserTokenInfo, expirationDateTime time.Time) (error) {
 
 	var (
 		key   []byte
@@ -77,8 +78,7 @@ func (userToken *UserToken) SetAuthenticationToken(userInfo users.UserInfo, expi
 		"first_name": userInfo.FirstName,
 		"last_name":  userInfo.LastName,
 		"user_name":  userInfo.UserName,
-		"email":      userInfo.Email,
-		"links":      userInfo.Links,
+		"email":      userInfo.Email,		
 		"exp":        expirationDateTime.Unix(),
 	})
 
@@ -115,7 +115,7 @@ func GenerateValidationToken() string {
 	return string(b)
 }
 
-func ExtractUserInfoFromTokenString(token string) (users.UserInfo, error) {
+func ExtractUserInfoFromTokenString(token string) (users.UserTokenInfo, error) {
 
 	var (
 		key   []byte		
@@ -134,7 +134,7 @@ func ExtractUserInfoFromTokenString(token string) (users.UserInfo, error) {
 }
 
 
-func GetUserInfoFromTokenString(token string) (users.UserInfo, error) {
+func GetUserInfoFromTokenString(token string) (users.UserTokenInfo, error) {
 	
 	var (
 		key   []byte		
@@ -148,19 +148,19 @@ func GetUserInfoFromTokenString(token string) (users.UserInfo, error) {
 	})
 
 	if err != nil {
-		return users.UserInfo{}, errors.New(`{"error": "Error parsing the token - ` + err.Error() + `"}`)
+		return users.UserTokenInfo{}, errors.New(`{"error": "Error parsing the token - ` + err.Error() + `"}`)
 	}
 
 	claim = t.Claims.(jwt.MapClaims)
 		
 	if time.Now().UTC().Unix() > int64(claim["exp"].(float64)) {
-		return users.UserInfo{}, errors.New(`{"error": "Token expired"}`)
+		return users.UserTokenInfo{}, errors.New(`{"error": "Token expired"}`)
 	}
 
 	return GetUserInfo(claim)
 }
 
-func ExtractUserInfoForTokenRefresh(context *gin.Context) (users.UserInfo, error) {
+func ExtractUserInfoForTokenRefresh(context *gin.Context) (users.UserTokenInfo, error) {
 	
 	token, _ := context.Cookie(TOKEN_NAME)
 
@@ -168,26 +168,26 @@ func ExtractUserInfoForTokenRefresh(context *gin.Context) (users.UserInfo, error
 
 		token = context.GetHeader("Authorization")
 
-		if token == "" {
-			return users.UserInfo{}, nil
+		if token == "" || len(token) < 7 {
+			return users.UserTokenInfo{}, nil
 		}
 
 		token = token[7:]
 		
 		if token == "" {
-			return users.UserInfo{}, errors.New(`{"error": "Token not found"}`)
+			return users.UserTokenInfo{}, errors.New(`{"error": "Token not found"}`)
 		}		
 	}
 
 	return ExtractUserInfoFromTokenString(token)
 }
 
-func GetUserInfoFromContext(context *gin.Context) (users.UserInfo, error) {
+func GetUserInfoFromContext(context *gin.Context) (users.UserTokenInfo, error) {
 
 	token, err := context.Cookie(TOKEN_NAME)
 
 	if err != nil {
-		return users.UserInfo{}, errors.New(`{"error": "Token not found"}`)		
+		return users.UserTokenInfo{}, errors.New(`{"error": "Token not found"}`)		
 	}
 
 	if token == "" {
@@ -195,53 +195,40 @@ func GetUserInfoFromContext(context *gin.Context) (users.UserInfo, error) {
 		token = context.GetHeader("Authorization")
 
 		if token == "" {
-			return users.UserInfo{}, nil
+			return users.UserTokenInfo{}, nil
 		}
 
 		token = token[7:]
 		
 		if token == "" {
-			return users.UserInfo{}, errors.New(`{"error": "Token not found"}`)
+			return users.UserTokenInfo{}, errors.New(`{"error": "Token not found"}`)
 		}
 	}
 
 	return GetUserInfoFromTokenString(token)
 }
 
-func GetUserInfo(jwtClaims jwt.MapClaims) (users.UserInfo, error) {
+func GetUserInfo(jwtClaims jwt.MapClaims) (users.UserTokenInfo, error) {
 
-	userInfo := users.UserInfo{
+	userInfo := users.UserTokenInfo{
 		FirstName: jwtClaims["first_name"].(string),
 		LastName:  jwtClaims["last_name"].(string),
 		Email:     jwtClaims["email"].(string),
-		UserName:  jwtClaims["user_name"].(string),
+		UserName:  jwtClaims["user_name"].(string),			
 	}
 
     idStr, ok := jwtClaims["id"].(string)
     if !ok {
-		return users.UserInfo{}, errors.New(`{"error": "Invalid ObjectID"}`)        
+		return users.UserTokenInfo{}, errors.New(`{"error": "Invalid ObjectID"}`)        
     }
 
     objectID, err := primitive.ObjectIDFromHex(idStr)
 
     if err != nil {
-        return users.UserInfo{}, errors.New(`{"error": "Invalid ObjectID"}`)
+        return users.UserTokenInfo{}, errors.New(`{"error": "Invalid ObjectID"}`)
     }
 
     userInfo.Id = objectID
-	
-	if jwtClaims["links"] != nil {
-		links := jwtClaims["links"].([]interface{})
-		userInfo.Links = make([]users.UserLink, len(links))
-		for i, link := range links {
-			linkMap := link.(map[string]interface{})
-			userInfo.Links[i].Name = linkMap["name"].(string)
-			userInfo.Links[i].Url = linkMap["url"].(string)
-			userInfo.Links[i].Id = linkMap["id"].(float64)
-		}
-	} else {
-		userInfo.Links = []users.UserLink{}
-	}	
 
 	return userInfo, nil
 }
@@ -253,18 +240,21 @@ func (userToken *UserToken) SetTokenCookie(c *gin.Context) {
 	}
 
     secure := os.Getenv("COOKIE_SECURE") == "true"
+	domain := os.Getenv("COOKIE_DOMAIN")
+	c.SetSameSite(http.SameSiteLaxMode)	
     c.SetCookie(
         TOKEN_NAME,
         userToken.Token,
         int(userToken.ExpirationDate.Time().UTC().Unix()),
         "/",
-        os.Getenv("COOKIE_DOMAIN"),
+        domain,
         secure,
         true,
-    )
+    )	
 }
 
 func DeleteTokenCookie(c *gin.Context) {
+	c.SetSameSite(http.SameSiteLaxMode)	
 	secure := os.Getenv("COOKIE_SECURE") == "true"
 	c.SetCookie(
 		TOKEN_NAME,
@@ -277,7 +267,7 @@ func DeleteTokenCookie(c *gin.Context) {
 	)
 }
 
-func SaveRefreshToken(userInfo users.UserInfo) error {
+func SaveRefreshToken(userInfo users.UserTokenInfo) error {
 
 	userRefershToken := UserToken{
 		UserId: userInfo.Id,

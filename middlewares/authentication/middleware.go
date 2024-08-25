@@ -23,20 +23,23 @@ func AuthMiddleware() gin.HandlerFunc {
 
 			token = c.GetHeader("Authorization")
 
-			if token == "" && len(token) < 7 {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token not found"})				
+			if token == "" || len(token) < 7 {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token not found"})								
+				return
 			}
 
 			token = token[7:]
 			
 			if token == "" {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token not found"})
+				return
 			}
 		}
 
 		if token == "" && err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token not found"})
-		}
+			return
+		}		
 		
 		var (
 			key   []byte
@@ -59,6 +62,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Error parsing the token. " + err.Error() + " Token:" + token}) 
+			return
 		}
 
 		claim = t.Claims.(jwt.MapClaims)
@@ -67,10 +71,12 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
 		}
 		
 		if time.Now().UTC().Unix() > int64(claim["exp"].(float64)) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})	
+			return
 		}
 
 		c.Set("userInfo", userInfo)		

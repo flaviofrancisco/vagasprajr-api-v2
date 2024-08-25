@@ -121,12 +121,10 @@ func Login(context *gin.Context) {
 
 	currentUser.UpdateLastLogin()
 
-	userInfo := users.UserInfo{
+	userInfo := users.UserTokenInfo{
 		Email: strings.ToLower(currentUser.Email),
 		FirstName: currentUser.FirstName,
-		LastName: currentUser.LastName,
-		Links: currentUser.Links,
-		Provider: currentUser.Provider,
+		LastName: currentUser.LastName,				
 		UserName: currentUser.UserName,
 		Id: currentUser.Id,
 	}
@@ -142,8 +140,6 @@ func Login(context *gin.Context) {
 		return
 	}
 
-	tokenExpirationDate := userToken.ExpirationDate.Time().UTC()
-
 	userToken.SetTokenCookie(context)		
 	err = tokens.SaveRefreshToken(userInfo)
 
@@ -151,6 +147,8 @@ func Login(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	tokenExpirationDate := userToken.ExpirationDate.Time().UTC()
 
 	result := users.AuthResponse {
 		AccessToken: userToken.Token,
@@ -168,6 +166,11 @@ func RefreshToken(context *gin.Context) {
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, users.AuthResponse{})
 		return
 	}
 
@@ -394,7 +397,7 @@ func GetUserProfile(context *gin.Context) {
 		return
 	}
 
-	userInfo := currentUser.(users.UserInfo)
+	userInfo := currentUser.(users.UserTokenInfo)
 	
 	if userInfo.Id.IsZero() {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
@@ -442,7 +445,7 @@ func IsAuthorized(context *gin.Context) {
 		return
 	}
 
-	userInfo := currentUser.(users.UserInfo)
+	userInfo := currentUser.(users.UserTokenInfo)
 
 	if userInfo.Id.IsZero() {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
@@ -490,7 +493,7 @@ func UpdateUser(context *gin.Context) {
 		return
 	}
 
-	userInfo := currentUser.(users.UserInfo)
+	userInfo := currentUser.(users.UserTokenInfo)
 	
 	if userInfo.Id.IsZero() {
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
