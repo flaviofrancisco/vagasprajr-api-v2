@@ -67,7 +67,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		claim = t.Claims.(jwt.MapClaims)
 
-		userInfo, err := tokens.GetUserInfo(claim)
+		userTokenInfo, err := tokens.GetUserInfo(claim)
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -79,7 +79,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userInfo", userInfo)		
+		c.Set("userTokenInfo", userTokenInfo)		
 		c.Next()
 	}
 }

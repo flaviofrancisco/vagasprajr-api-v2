@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users/tokens"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/emails"
@@ -390,7 +391,7 @@ func GetUser(context *gin.Context) {
 
 func GetUserProfile(context *gin.Context) {
 	
-	currentUser, context_error := context.Get("userInfo")	
+	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	
 
 	if !context_error {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
@@ -438,7 +439,7 @@ func GetUserProfile(context *gin.Context) {
 }
 
 func IsAuthorized(context *gin.Context) {
-	currentUser, context_error := context.Get("userInfo")
+	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)
 
 	if !context_error {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
@@ -486,7 +487,7 @@ func IsAuthorized(context *gin.Context) {
 
 func UpdateUser(context *gin.Context) {
 	
-	currentUser, context_error := context.Get("userInfo")	
+	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	
 
 	if !context_error {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})

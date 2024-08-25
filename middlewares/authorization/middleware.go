@@ -13,13 +13,13 @@ func AuthorizationMiddleware(roles []string) gin.HandlerFunc {
 			return
 		}
 
-		userInfo := c.MustGet("userInfo").(users.UserInfo)
+		userTokenInfo := c.MustGet("userTokenInfo").(users.UserTokenInfo)
 
-		if userInfo.Id.IsZero() {
+		if userTokenInfo.Id.IsZero() {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Unable to get user information"})
 		}
 
-		userRoles, err := users.GetUserRoles(userInfo.Id)
+		userRoles, err := users.GetUserRoles(userTokenInfo.Id)
 
 		if err != nil {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Unable to get user roles"})
