@@ -525,6 +525,9 @@ func UpdateUser(context *gin.Context) {
 	user.Links = request.Links
 	user.Experiences = request.Experiences
 	user.TechExperiences = request.TechExperiences
+	user.IdiomsInfo = request.IdiomsInfo
+	user.Certifications = request.Certifications
+	user.Educations = request.Educations
 		
 	err = user.Update()
 

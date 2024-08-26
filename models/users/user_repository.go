@@ -663,6 +663,10 @@ func (user *User) Update() error {
 				{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
 				{Key: "about_me", Value: user.AboutMe},
 				{Key: "tech_experiences", Value: user.TechExperiences},
+				{Key: "idioms_info", Value: user.IdiomsInfo},
+				{Key: "certifications", Value: user.Certifications},
+				{Key: "educations", Value: user.Educations},
+				{Key: "experiences", Value: user.Experiences},
 			},
 		},		
 	}

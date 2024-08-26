@@ -19,6 +19,9 @@ type UpdateUserRequest struct {
 	Links                []users.UserLink            `json:"links"`
 	TechExperiences      []users.UserTechExperience  `json:"tech_experiences"`
 	Experiences          []users.UserExperice        `json:"experiences"`
+	IdiomsInfo		 	 []users.UserIdiomInfo       `json:"idioms_info"`
+	Certifications	   	 []users.UserCertification   `json:"certifications"`
+	Educations		   	 []users.UserEducation       `json:"educations"`
 }
 
 type UserProfileResponse struct {
