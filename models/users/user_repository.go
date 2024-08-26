@@ -750,6 +750,7 @@ func( user *User) UpdateUserName() error {
 			Key: "$set", 
 			Value: bson.D{
 				{Key: "user_name", Value: user.UserName},
+				{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
 			},
 		},		
 	}
