@@ -141,6 +141,7 @@ type UserDiversityInfo struct {
 }
 
 type UserIdiomInfo struct {
+	Id   float64 `json:"id"`
 	Name  string `json:"name"`
 	Level string `json:"level"`
 }
