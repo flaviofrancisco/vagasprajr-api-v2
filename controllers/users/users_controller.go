@@ -508,11 +508,6 @@ func UpdateUserName(context *gin.Context) {
 		return
 	}
 
-	if userInfo.Id != user.Id {
-		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
-		return
-	}
-
 	var request UpdateUserNameRequest	
 	context.BindJSON(&request)
 

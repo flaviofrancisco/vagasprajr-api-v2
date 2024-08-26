@@ -61,6 +61,7 @@ func RegisterRoutes(server *gin.Engine) {
 	// Jobs
 	server.POST("/jobs/search", jobs.GetJobs)
 	server.POST("/jobs/aggregated-values", jobs.GetAggregatedJobsValues)
+	server.POST("/jobs", authentication.AuthMiddleware(), jobs.CreateJob)
 
 	//Short URLs
 	// Get the original job's URL from the short URL

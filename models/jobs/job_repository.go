@@ -8,6 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"math/rand"
+
+	"github.com/google/uuid"
+
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"go.mongodb.org/mongo-driver/bson"
@@ -103,6 +107,156 @@ func GetJobsAggregatedValues(collection *mongo.Collection, body JobFilter, field
 	}
 
 	return options, nil	
+}
+
+func CreateJob(body CreateJobBody) (Job, error) {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return Job{}, err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return Job{}, err
+	}	
+
+	db := client.Database(mongodb_database)
+	collection := db.Collection("jobs")
+	
+	job := Job{
+		Id:          uuid.New().String(),
+		Title:       body.Title,
+		Company:     body.Company,
+		Location:    body.Location,
+		Url:         body.Url,
+		Salary:      body.Salary,
+		Provider:    body.Provider,
+		CreatedAt:   commons.GetBrasiliaTime(),
+		JobDate:     commons.GetBrasiliaTime().Format(time.DateTime),
+		Creator:     body.Creator,
+		IsApproved:  false,
+		IsClosed:    false,
+		PostedOnDiscord:       false,
+		PostedOnTelegram:      false,
+		PostedOnMastodon:      false,
+		PostedOnFacebook:      false,
+		PostedOnTwitter:       false,
+		PostedOnBlueSky:       false,		
+	}
+
+	shortUrl, detailUrl, code := CreateShortUrl()
+
+	for {
+		isAvailable, err := IsShortUrlAvailable(shortUrl)
+		if err != nil {
+			// handle error
+			log.Fatalf("Error checking URL availability: %v", err)
+		}
+		if isAvailable {
+			break
+		}
+		shortUrl, detailUrl, code = CreateShortUrl()
+	}	
+
+	job.Code = code
+	job.JobShortUrl = shortUrl
+	job.JobDetailsUrl = detailUrl
+
+	if body.Provider == "" {
+		job.Provider = "vagasprajr"
+	}
+
+	_, err = collection.InsertOne(context.Background(), job)
+
+	if err != nil {
+		return Job{}, err
+	}
+
+	return job, nil
+}
+
+func IsShortUrlAvailable(shortUrl string) (bool, error) {
+
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+
+	client, err := models.Connect()
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return false, err
+	}
+
+	collection := client.Database(mongodb_database).Collection("jobs")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var result JobItem
+
+	err = collection.FindOne(ctx, bson.M{"job_short_url": shortUrl}).Decode(&result)
+
+	if err != nil {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func GenerateCode() string {
+	
+	// Create a randon string with alfanumeric characters with 6 characters
+
+	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+
+	b := make([]rune, 6)
+	for i := range b {
+		b[i] = letterRunes[r.Intn(len(letterRunes))]
+	}
+
+	code := string(b)
+
+	return code
+}
+
+func CreateShortUrl() (string, string, string) {
+ 	
+	code := GenerateCode()
+
+	return os.Getenv("BASE_UI_HOST")+`/go/` + code, os.Getenv("BASE_UI_HOST")+`/v/` + code, code
+}
+
+func GetValidationToken() string {
+
+	// Create a randon string with alfanumeric characters with 6 characters
+
+	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
+	s := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(s)
+
+	b := make([]rune, 32)
+	for i := range b {
+		b[i] = letterRunes[r.Intn(len(letterRunes))]
+	}
+
+	return string(b)
 }
 
 func GetJobs(body JobFilter) (PaginatedResult, error) {
