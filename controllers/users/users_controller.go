@@ -485,6 +485,81 @@ func IsAuthorized(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"isAuthorized": isAuthorized})
 }
 
+func UpdateUserName(context *gin.Context) {
+	
+	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+
+	userInfo := currentUser.(users.UserTokenInfo)
+
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
+		return
+	}
+
+	user, err := users.GetUserById(userInfo.Id)
+
+	if err != nil {	
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if userInfo.Id != user.Id {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+
+	var request UpdateUserNameRequest	
+	context.BindJSON(&request)
+
+	if request.UserName == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Nome de usuário não informado"})
+		return
+	}
+
+	is_valid := users.IsUserNameValid(request.UserName)
+
+	if !is_valid {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Nome de usuário inválido. Somete use letras e números; não use espaço e deve ter no mínimo 3 caracteres. Por favor, escolha outro."})
+		return
+	}
+
+	already_exists, err := users.UserNameAlreadyExists(request.UserName)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if already_exists {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Nome de usuário já em uso. Por favor, escolha outro."})
+		return
+	}
+
+	user.Id = userInfo.Id
+	user.UserName = request.UserName
+
+	err = user.UpdateUserName()
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err = users.GetUserById(userInfo.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"success": true, "user_name": user.UserName, "message": "Nome de usuário atualizado com sucesso"})	
+}
+
 func UpdateUser(context *gin.Context) {
 	
 	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	

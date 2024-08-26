@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -667,6 +668,88 @@ func (user *User) Update() error {
 				{Key: "certifications", Value: user.Certifications},
 				{Key: "educations", Value: user.Educations},
 				{Key: "experiences", Value: user.Experiences},
+			},
+		},		
+	}
+	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func IsUserNameValid(userName string) bool {
+
+	//Remove spaces from the user name
+	userName = strings.Replace(userName, " ", "", -1)
+
+	// The user name must have at least 3 alphanumeric characters. No special characters; symbols or spaces are allowed.
+	if len(userName) < 3 {
+		return false
+	}
+	
+	//regex
+	pattern := "^[a-zA-Z0-9]*$"
+	match, _ := regexp.MatchString(pattern, userName)
+
+	return match
+}
+
+func UserNameAlreadyExists(userName string) (bool, error) {
+	
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return false, err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{Key: "user_name", Value: strings.ToLower(userName)}}
+	var result User
+	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func( user *User) UpdateUserName() error {
+	
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{Key: "_id", Value: user.Id}}
+
+	update := bson.D{
+		{
+			Key: "$set", 
+			Value: bson.D{
+				{Key: "user_name", Value: user.UserName},
 			},
 		},		
 	}

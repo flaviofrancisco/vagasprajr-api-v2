@@ -9,6 +9,10 @@ type AuthorizeRequest struct {
 	Roles []string `json:"roles"`
 }
 
+type UpdateUserNameRequest struct {	
+	UserName 	string `json:"user_name"`	
+}
+
 type UpdateUserRequest struct {
 	Id                   string                      `json:"id"`	
 	FirstName            string                      `json:"first_name"`

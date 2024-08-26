@@ -83,4 +83,5 @@ func RegisterRoutes(server *gin.Engine) {
 	// Users	
 	server.GET("/users/profile", authentication.AuthMiddleware(), users.GetUserProfile)
 	server.PUT("/users/profile", authentication.AuthMiddleware(), users.UpdateUser)
+	server.POST("/users/username", authentication.AuthMiddleware(), users.UpdateUserName)
 }
