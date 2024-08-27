@@ -52,6 +52,12 @@ type JobFilter struct {
 	IsAscending bool            		`json:"is_ascending" bson:"is_ascending"`
 }
 
+type CustomJobFilter struct {	
+	Field string `json:"field"`
+	Value string `json:"value"`
+	DataType string `json:"data_type"`
+}
+
 type JobFilterOptions struct {
 	Companies []string           `json:"companies" bson:"companies"`
 	Locations []string           `json:"locations" bson:"locations"`
@@ -76,6 +82,13 @@ type CreateJobBody struct {
 	Code 		string 				`json:"code" bson:"code"`
 	Creator		primitive.ObjectID  `json:"creator" bson:"creator"`
 	Description string              `json:"description" bson:"description"`
+}
+
+type JobsPaginatedResult struct {
+	Total   int64 
+	Page    int
+	PerPage int
+	Data    []Job
 }
 
 type Job struct {

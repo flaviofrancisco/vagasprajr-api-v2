@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -433,7 +432,7 @@ func GetUserByValidationToken(token string) (User, error) {
 	return result, nil	
 }
 
-func GetUsers(filter UsersRequest) (UsersPaginatedResult, error) {
+func GetUsers(filter commons.FilterRequest) (UsersPaginatedResult, error) {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
 
@@ -470,7 +469,7 @@ func GetUsers(filter UsersRequest) (UsersPaginatedResult, error) {
 
 	options := options.Find().SetSort(bson.M{filter.Sort: orderDirection}).SetSkip(int64(skip)).SetLimit(int64(perPage))
 
-	cursor, err := db.Collection("users").Find(context.Background(), filter.getFilter(), options)
+	cursor, err := db.Collection("users").Find(context.Background(), filter.GetFilter(), options)
 
 	if err != nil {
 		return UsersPaginatedResult{}, err
@@ -482,7 +481,7 @@ func GetUsers(filter UsersRequest) (UsersPaginatedResult, error) {
 		return UsersPaginatedResult{}, err
 	}
 
-	total, err := db.Collection("users").CountDocuments(context.Background(), filter.getFilter())
+	total, err := db.Collection("users").CountDocuments(context.Background(), filter.GetFilter())
 
 	return UsersPaginatedResult{
 		Total:   total,
@@ -490,58 +489,6 @@ func GetUsers(filter UsersRequest) (UsersPaginatedResult, error) {
 		PerPage: perPage,
 		Data:    users,
 	}, nil		
-}
-
-func (filter *UsersRequest) getFilter() bson.M {
-
-	returnFilter := bson.M{}
-	andConditions := []bson.M{}
-
-	for _, filterItem := range filter.Filters {
-		itemFilters := []bson.M{}
-		for _, item := range filterItem.Fields {
-			switch item.Type {
-			case "string":
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$regex": item.Value, "$options": "i"}})			
-			case "date":
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$eq": item.Value}})				
-			case "array_object":
-				values := strings.Split(item.Value, ",")
-				for _, value := range values {
-					itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$regex": value, "$options": "i"}})
-				}
-			case "array_string":
-				values := strings.Split(item.Value, ",")		
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$in": values}})
-			case "boolean":
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$eq": item.Value}})
-			case "number":				
-				min_value, err := strconv.ParseInt(item.MinValue, 10, 64)				
-				if err != nil {
-					min_value = 0
-				}				
-				max_value, err := strconv.ParseInt(item.MaxValue, 10, 64)
-				if err != nil {
-					// Max value of int
-					max_value = 9223372036854775807
-				}
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$gte": min_value, "$lte": max_value}})
-			default:
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$regex": item.Value, "$options": "i"}})
-			}			
-		}
-
-		if len(itemFilters) > 0 {
-			filterOperator := bson.M{"$" + filterItem.Operator: itemFilters}
-			andConditions = append(andConditions, filterOperator)
-		}
-	}
-
-	if len(andConditions) != 0 {
-		returnFilter["$and"] = andConditions
-	}
-	
-	return returnFilter
 }
 
 func UpdateValidationToken(user User) error {

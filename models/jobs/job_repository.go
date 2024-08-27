@@ -334,9 +334,70 @@ func GetValidationToken() string {
 	return string(b)
 }
 
+func GetJobsAsAdmin(filter commons.FilterRequest) (JobsPaginatedResult, error) {
+
+	collection:= "jobs"
+
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return JobsPaginatedResult{}, err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	page:= filter.Page
+	perPage:= filter.PageSize
+
+	if (page - 1) < 0 {
+		page = 1
+	}
+
+	skip := (page - 1) * perPage
+
+	if filter.Sort == "" {
+		filter.Sort = "created_at"
+	}
+
+	orderDirection := -1
+
+	if filter.IsAscending {
+		orderDirection = 1
+	}
+
+	options := options.Find().SetSort(bson.M{filter.Sort: orderDirection}).SetSkip(int64(skip)).SetLimit(int64(perPage))
+
+	cursor, err := db.Collection(collection).Find(context.Background(), filter.GetFilter(), options)
+
+	if err != nil {
+		return JobsPaginatedResult{}, err
+	}
+
+	var jobs []Job
+
+	if err = cursor.All(context.Background(), &jobs); err != nil {
+		return JobsPaginatedResult{}, err
+	}
+
+	total, err := db.Collection(collection).CountDocuments(context.Background(), filter.GetFilter())
+
+	return JobsPaginatedResult{
+		Total:   total,
+		Page:    page,
+		PerPage: perPage,
+		Data:    jobs,
+	}, nil		
+}
 
 
-func GetJobs(body JobFilter, is_admin bool) (PaginatedResult, error) {
+func GetJobs(body JobFilter) (PaginatedResult, error) {
 
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
@@ -389,11 +450,6 @@ func GetJobs(body JobFilter, is_admin bool) (PaginatedResult, error) {
 	andConditions = appendInCondition(andConditions, "location", body.JobFilterOptions.Locations)
 	andConditions = appendInCondition(andConditions, "provider", body.JobFilterOptions.Providers)
 	andConditions = appendInCondition(andConditions, "salary", body.JobFilterOptions.Salaries)
-
-	if !is_admin {
-		andConditions = append(andConditions, bson.M{"is_approved": true})
-		andConditions = append(andConditions, bson.M{"is_closed": false})
-	}
 
 	if body.CreatorId != primitive.NilObjectID {
 		andConditions = append(andConditions, bson.M{"creator": body.CreatorId})

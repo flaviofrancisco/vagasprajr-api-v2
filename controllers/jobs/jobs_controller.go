@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/jobs"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/gin-gonic/gin"
@@ -51,16 +52,20 @@ func GetJobsAsAdmin(context *gin.Context) {
 	userRole := context.MustGet("userRole").(string)
 
 	if userRole != "admin" {
+		context.Writer.WriteHeaderNow()
+		context.Status(http.StatusUnauthorized)  
 		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
 	}
 
-	var body jobs.JobFilter
+	var body commons.FilterRequest
 	context.BindJSON(&body)
 
-	result, err := jobs.GetJobs(body, true)
+	result, err := jobs.GetJobsAsAdmin(body)
 
 	if err != nil {
+		context.Writer.WriteHeaderNow()
+		context.Status(http.StatusInternalServerError)  
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -73,7 +78,7 @@ func GetJobs(context *gin.Context) {
 	var body jobs.JobFilter
 	context.BindJSON(&body)
 
-	result, err := jobs.GetJobs(body, false)
+	result, err := jobs.GetJobs(body)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

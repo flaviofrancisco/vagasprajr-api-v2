@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users/tokens"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/emails"
@@ -649,7 +650,7 @@ func GetUsers(context *gin.Context) {
 		return
 	}
 
-	var request users.UsersRequest
+	var request commons.FilterRequest
 	context.BindJSON(&request)
 
 	result, err := users.GetUsers(request)

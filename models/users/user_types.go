@@ -191,27 +191,6 @@ type UserJobLocation struct {
 	Priority int    `json:"priority"`
 }
 
-type UsersRequest struct {
-    Sort     	string  	`bson:"sort" json:"sort"`
-	IsAscending bool 		`bson:"is_ascending" json:"is_ascending"`
-    Page     	int      	`bson:"page" json:"page"`
-    PageSize 	int      	`bson:"page_size" json:"page_size"`
-    Filters  	[]Filter 	`bson:"filters" json:"filters"`
-}
-
-type Filter struct {
-	Operator string `bson:"operator" json:"operator"`
-	Fields []Field `bson:"fields" json:"fields"`
-}
-
-type Field struct {
-	Name 		string `bson:"name" json:"name"`
-	Value 		string `bson:"value" json:"value"`
-	Type 		string `bson:"type" json:"type"`
-	MinValue 	string `bson:"min_value" json:"min_value"`
-	MaxValue 	string `bson:"max_value" json:"max_value"`
-}
-
 type UsersPaginatedResult struct {
 	Total   int64 
 	Page    int
