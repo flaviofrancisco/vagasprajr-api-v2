@@ -250,6 +250,47 @@ func IsShortUrlAvailable(shortUrl string) (bool, error) {
 	return false, nil
 }
 
+func UpdateJob(body Job) (Job, error) {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return Job{}, err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	if err != nil {
+		return Job{}, err
+	}	
+
+	db := client.Database(mongodb_database)
+	collection := db.Collection("jobs")
+
+	filter := bson.M{"_id": body.Id}
+
+	update := bson.M{
+		"$set": bson.M{
+			"is_approved":       body.IsApproved,
+			"is_closed":         body.IsClosed,
+			"updated_at":  commons.GetBrasiliaTime(),
+		},
+	}
+	
+	_, err = collection.UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return Job{}, err
+	}
+
+	return body, nil
+}
+
 func GenerateCode() string {
 	
 	// Create a randon string with alfanumeric characters with 6 characters
@@ -293,7 +334,9 @@ func GetValidationToken() string {
 	return string(b)
 }
 
-func GetJobs(body JobFilter) (PaginatedResult, error) {
+
+
+func GetJobs(body JobFilter, is_admin bool) (PaginatedResult, error) {
 
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
@@ -347,14 +390,18 @@ func GetJobs(body JobFilter) (PaginatedResult, error) {
 	andConditions = appendInCondition(andConditions, "provider", body.JobFilterOptions.Providers)
 	andConditions = appendInCondition(andConditions, "salary", body.JobFilterOptions.Salaries)
 
-	andConditions = append(andConditions, bson.M{"is_approved": true})
-	andConditions = append(andConditions, bson.M{"is_closed": false})
+	if !is_admin {
+		andConditions = append(andConditions, bson.M{"is_approved": true})
+		andConditions = append(andConditions, bson.M{"is_closed": false})
+	}
 
 	if body.CreatorId != primitive.NilObjectID {
 		andConditions = append(andConditions, bson.M{"creator": body.CreatorId})
 	}	
 
-	filter["$and"] = andConditions
+	if len(andConditions) > 0 {
+		filter["$and"] = andConditions
+	}
 
 	page := body.Page
 	perPage := body.PageSize
@@ -363,9 +410,19 @@ func GetJobs(body JobFilter) (PaginatedResult, error) {
 		page = 1
 	}
 
+	if body.Sort == "" {
+		body.Sort = "created_at"
+	}
+
+	orderDirection := -1
+
+	if body.IsAscending {
+		orderDirection = 1
+	}
+
 	skip := (page - 1) * perPage
-	// Sort the documents by created_at in descending order
-	options := options.Find().SetSort(bson.M{"created_at": -1}).SetSkip(int64(skip)).SetLimit(int64(perPage))
+		
+	options := options.Find().SetSort(bson.M{body.Sort: orderDirection}).SetSkip(int64(skip)).SetLimit(int64(perPage))
 	cursor, err := collection.Find(context.Background(), filter, options)
 
 	if err != nil {

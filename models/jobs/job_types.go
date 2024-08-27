@@ -13,16 +13,26 @@ type PaginatedResult struct {
 	Data    []JobViewPublic // Filtered documents
 }
 
+type UpdateJobBody struct {	
+	IsApproved   bool   `json:"is_approved" bson:"is_approved"`
+	IsClosed     bool   `json:"is_closed" bson:"is_closed"`
+}
+
 type JobViewPublic struct {
-	Id          string    `json:"id" bson:"_id"`
-	Title       string    `json:"title" bson:"title"`
-	Company     string    `json:"company_name" bson:"company_name"`
-	Location    string    `json:"location" bson:"location"`
-	JobShortUrl string    `json:"job_short_url" bson:"job_short_url"`
-	Salary      string    `json:"salary" bson:"salary"`
-	QtyClicks   int       `json:"qty_clicks" bson:"qty_clicks"`
-	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
-	Provider    string     `json:"provider" bson:"provider"`
+	Id          	string    `json:"id" bson:"_id"`
+	Title       	string    `json:"title" bson:"title"`
+	Company     	string    `json:"company_name" bson:"company_name"`
+	Location    	string    `json:"location" bson:"location"`
+	JobShortUrl 	string    `json:"job_short_url" bson:"job_short_url"`
+	Salary      	string    `json:"salary" bson:"salary"`
+	QtyClicks   	int       `json:"qty_clicks" bson:"qty_clicks"`
+	CreatedAt   	time.Time `json:"created_at" bson:"created_at"`
+	Provider    	string     `json:"provider" bson:"provider"`
+	IsApproved  	bool      `json:"is_approved" bson:"is_approved"`
+	IsClosed    	bool      `json:"is_closed" bson:"is_closed"`
+	Url		 		string    `json:"url" bson:"url"`
+	Code 			string    `json:"code" bson:"code"`
+	JobDetailsUrl 	string 	  `json:"job_details_url" bson:"job_details_url"`
 }
 
 type JobFilter struct {
@@ -36,6 +46,10 @@ type JobFilter struct {
 	Ids       []string           		`json:"ids" bson:"ids"`
 	CreatorId primitive.ObjectID 		`json:"creator_id" bson:"creator_id"`
 	JobFilterOptions JobFilterOptions 	`json:"job_filter_options" bson:"job_filter_options"`
+	IsClosed   bool				        `json:"is_closed" bson:"is_closed"`
+	IsApproved bool                     `json:"is_approved" bson:"is_approved"`
+	Sort 	   string             		`json:"sort" bson:"sort"`
+	IsAscending bool            		`json:"is_ascending" bson:"is_ascending"`
 }
 
 type JobFilterOptions struct {

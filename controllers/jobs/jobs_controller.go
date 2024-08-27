@@ -9,11 +9,71 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func UpdateJob(context *gin.Context) {
+	userRole := context.MustGet("userRole").(string)
+
+	if userRole != "admin" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	code := context.Param("code")	
+
+	if code == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "code is required"})
+		return
+	}
+
+	var body jobs.UpdateJobBody
+	context.BindJSON(&body)
+
+	job, err := jobs.GetJob(code)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	job.IsApproved = body.IsApproved
+	job.IsClosed = body.IsClosed
+
+	result, err := jobs.UpdateJob(job)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, result)
+}
+
+func GetJobsAsAdmin(context *gin.Context) {
+	userRole := context.MustGet("userRole").(string)
+
+	if userRole != "admin" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var body jobs.JobFilter
+	context.BindJSON(&body)
+
+	result, err := jobs.GetJobs(body, true)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, result)
+
+}
+
 func GetJobs(context *gin.Context) {
 	var body jobs.JobFilter
 	context.BindJSON(&body)
 
-	result, err := jobs.GetJobs(body)
+	result, err := jobs.GetJobs(body, false)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
