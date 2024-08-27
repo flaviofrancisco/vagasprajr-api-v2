@@ -61,6 +61,7 @@ type CreateJobBody struct {
 	Created_at 	time.Time 			`json:"created_at" bson:"created_at"`	
 	Code 		string 				`json:"code" bson:"code"`
 	Creator		primitive.ObjectID  `json:"creator" bson:"creator"`
+	Description string              `json:"description" bson:"description"`
 }
 
 type Job struct {

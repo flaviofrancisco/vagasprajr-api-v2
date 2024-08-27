@@ -23,6 +23,31 @@ func GetJobs(context *gin.Context) {
 	context.JSON(http.StatusOK, result)
 }
 
+func GetJob(context *gin.Context) {
+	code := context.Param("code")
+
+	result, err := jobs.GetJob(code)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	jobView := JobDetailView {
+		Title: result.Title,
+		Company: result.Company,
+		Location: result.Location,
+		Url: result.Url,
+		Salary: result.Salary,
+		Provider: result.Provider,
+		Created_at: result.CreatedAt,
+		Code: result.Code,
+		Description: result.Description,		
+	}
+	
+	context.JSON(http.StatusOK, jobView)
+}
+
 func CreateJob(context *gin.Context) {
 
 	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	
