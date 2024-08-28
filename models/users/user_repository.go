@@ -288,6 +288,35 @@ func Update(user *User) error {
 	return nil
 }
 
+func (user *User) IncrementProfileViews() error {
+	
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{Key: "_id", Value: user.Id}}
+	update := bson.D{{Key: "$inc", Value: bson.D{{Key: "public_profile_views", Value: 1}}}}
+
+	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (user *User) ConfirmEmail() error {
 
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
@@ -316,6 +345,40 @@ func (user *User) ConfirmEmail() error {
 	}
 
 	return nil
+}
+
+func GetUserByUserName(userName string) (User, error) {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return User{}, err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{
+		{Key: "user_name", Value: strings.ToLower(userName)},
+		{Key: "is_deleted", Value: false},
+		{Key: "is_email_confirmed", Value: true},
+		{Key: "is_public", Value: true},
+	}
+	var result User
+	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return User{}, nil
+		}
+	}
+
+	return result, nil	
 }
 
 func GetUserById(id primitive.ObjectID) (User, error) {
@@ -615,6 +678,7 @@ func (user *User) Update() error {
 				{Key: "certifications", Value: user.Certifications},
 				{Key: "educations", Value: user.Educations},
 				{Key: "experiences", Value: user.Experiences},
+				{Key: "is_public", Value: user.IsPublic},
 			},
 		},		
 	}

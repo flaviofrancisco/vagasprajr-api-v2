@@ -390,6 +390,50 @@ func GetUser(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func GetPublicUserProfile(context *gin.Context) {
+	
+	userName := context.Param("username")
+
+	if userName == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Nome do usuário não informado"})
+		return
+	}
+	
+	user, err := users.GetUserByUserName(userName)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if !user.IsPublic {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+
+	user.IncrementProfileViews()
+
+	response := UserProfileResponse {
+		Id: user.Id.Hex(),
+		FirstName: user.FirstName,
+		LastName: user.LastName,		
+		UserName: user.UserName,
+		AboutMe: user.AboutMe,
+		City: user.City,
+		State: user.State,
+		Links: user.Links,
+		IsEmailConfirmed: user.IsEmailConfirmed,		
+		Experiences: user.Experiences,				
+		TechExperiences: user.TechExperiences,
+		Educations: user.Educations,
+		Certifications: user.Certifications,				
+		IdiomsInfo: user.IdiomsInfo,
+		IsPublic: user.IsPublic,		
+	}
+
+	context.JSON(http.StatusOK, response)
+}
+
 func GetUserProfile(context *gin.Context) {
 	
 	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	
@@ -599,6 +643,7 @@ func UpdateUser(context *gin.Context) {
 	user.IdiomsInfo = request.IdiomsInfo
 	user.Certifications = request.Certifications
 	user.Educations = request.Educations
+	user.IsPublic = request.IsPublic
 		
 	err = user.Update()
 
@@ -635,7 +680,7 @@ func UpdateUser(context *gin.Context) {
 		JobPreference: user.JobPreference,
 		DiversityInfo: user.DiversityInfo,
 		IdiomsInfo: user.IdiomsInfo,
-		IsPublicForRecruiter: user.IsPublicForRecruiter,
+		IsPublicForRecruiter: user.IsPublicForRecruiter,		
 	}
 
 	context.JSON(http.StatusOK, response)

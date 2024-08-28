@@ -26,6 +26,7 @@ type UpdateUserRequest struct {
 	IdiomsInfo		 	 []users.UserIdiomInfo       `json:"idioms_info"`
 	Certifications	   	 []users.UserCertification   `json:"certifications"`
 	Educations		   	 []users.UserEducation       `json:"educations"`
+	IsPublic 		   	 bool                        `json:"is_public"`
 }
 
 type UserProfileResponse struct {
@@ -50,7 +51,7 @@ type UserProfileResponse struct {
 	DiversityInfo        users.UserDiversityInfo     `json:"diversity_info"`
 	IdiomsInfo           []users.UserIdiomInfo       `json:"idioms_info"`
 	IsPublicForRecruiter bool                        `json:"is_public_for_recruiter"`
-	ProfileImageUrl 	 string			             `json:"profile_image_url"`
+	ProfileImageUrl 	 string			             `json:"profile_image_url"`	
 }
 
 type ResetPasswordRequest struct {
