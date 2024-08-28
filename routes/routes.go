@@ -55,6 +55,11 @@ func RegisterRoutes(server *gin.Engine) {
 	admin.POST("/jobs", jobs.GetJobsAsAdmin)
 	admin.PUT("/jobs/:code", jobs.UpdateJob)
 
+	//Admin Shopping
+	admin.POST("/ad-references", shopping.GetFilteredAdReferences)
+	admin.GET("/ad-references/:id", shopping.GetAdReference)
+	admin.PUT("/ad-references/:id", shopping.UpdateAdReference)
+
 	// Authentication	
 	server.POST("/auth/login", users.Login)	
 	server.GET("/auth/logout", users.LogOut)		
