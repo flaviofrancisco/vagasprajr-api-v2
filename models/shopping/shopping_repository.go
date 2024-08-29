@@ -153,6 +153,71 @@ func GetAdReference(id string) (AdReference, error) {
 	return adReference, nil
 }
 
+func CreateAdReference(adReference AdReference) error {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+	collection := db.Collection("ad_references")
+
+	adReference.Id = primitive.NewObjectID()
+	adReference.CreatedAt =commons.GetBrasiliaTime()
+
+	_, err = collection.InsertOne(context.Background(), adReference)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteAdReference(id string) error {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+	collection := db.Collection("ad_references")
+
+	idHex, err := primitive.ObjectIDFromHex(id)
+
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{
+		"_id": idHex,
+	}
+
+	_, err = collection.DeleteOne(context.Background(), filter)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func UpdateAdReference(adReference AdReference) error {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
