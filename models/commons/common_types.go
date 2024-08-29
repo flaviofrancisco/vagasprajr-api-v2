@@ -48,10 +48,21 @@ func (filter *FilterRequest) GetFilter() bson.M {
 				}
 			case "array_string":
 				values := strings.Split(item.Value, ",")		
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$in": values}})
-			case "boolean":
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$eq": item.Value}})
-			case "number":				
+				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$in": values}})			
+			case "boolean", "checkbox":
+				// convert string to boolean
+				value, err := strconv.ParseBool(item.Value)
+				if err != nil {
+					value = false
+				}
+				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$eq": value}})
+			case "number":
+				value, err := strconv.ParseInt(item.Value, 10, 64)
+				if err != nil {
+					value = 0
+				}
+				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$eq": value}})
+			case "number_range":				
 				min_value, err := strconv.ParseInt(item.MinValue, 10, 64)				
 				if err != nil {
 					min_value = 0
