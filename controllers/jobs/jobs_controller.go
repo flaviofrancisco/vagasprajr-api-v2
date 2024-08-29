@@ -10,6 +10,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func DeleteJob(context *gin.Context) {
+	userRole := context.MustGet("userRole").(string)
+
+	if userRole != "admin" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	code := context.Param("code")
+
+	if code == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "code is required"})
+		return
+	}
+
+	err := jobs.DeleteJob(code)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"message": "Job deleted successfully"})
+}
+
 func UpdateJob(context *gin.Context) {
 	userRole := context.MustGet("userRole").(string)
 
@@ -39,6 +64,28 @@ func UpdateJob(context *gin.Context) {
 	job.IsClosed = body.IsClosed
 
 	result, err := jobs.UpdateJob(job)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, result)
+}
+
+func GetJobAsAdmin(context *gin.Context) {
+	userRole := context.MustGet("userRole").(string)
+
+	if userRole != "admin" {
+		context.Writer.WriteHeaderNow()
+		context.Status(http.StatusUnauthorized)  
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	code := context.Param("code")
+
+	result, err := jobs.GetJob(code)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -87,6 +134,7 @@ func GetJobs(context *gin.Context) {
 
 	context.JSON(http.StatusOK, result)
 }
+
 
 func GetJob(context *gin.Context) {
 	code := context.Param("code")

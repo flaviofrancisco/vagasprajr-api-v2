@@ -54,6 +54,9 @@ func RegisterRoutes(server *gin.Engine) {
 	//Admin Jobs
 	admin.POST("/jobs", jobs.GetJobsAsAdmin)
 	admin.PUT("/jobs/:code", jobs.UpdateJob)
+	admin.DELETE("/jobs/:code", jobs.DeleteJob)
+	admin.POST("/jobs/new", jobs.CreateJob)
+	admin.GET("/jobs/:code", jobs.GetJobAsAdmin)
 
 	//Admin Shopping
 	admin.POST("/ad-references", shopping.GetFilteredAdReferences)	

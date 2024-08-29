@@ -109,6 +109,33 @@ func GetJobsAggregatedValues(collection *mongo.Collection, body JobFilter, field
 	return options, nil	
 }
 
+func DeleteJob(code string) error {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.M{"code": code}
+	_, err = db.Collection("jobs").DeleteOne(context.Background(), filter)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetJob(code string) (Job, error) {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()
