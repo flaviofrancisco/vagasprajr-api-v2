@@ -1,10 +1,15 @@
 package commons
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type FilterRequest struct {
@@ -40,7 +45,19 @@ func (filter *FilterRequest) GetFilter() bson.M {
 			case "string":
 				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$regex": item.Value, "$options": "i"}})			
 			case "date":
-				itemFilters = append(itemFilters, bson.M{item.Name: bson.M{"$eq": item.Value}})				
+                dateValue, err := time.Parse("2006-01-02", item.Value)
+                if err != nil {
+                    // handle error
+                    continue
+                }				
+				startDate := time.Date(dateValue.Year(), dateValue.Month(), dateValue.Day(), 0, 0, 0, 0, dateValue.Location())
+				endDate := time.Date(dateValue.Year(), dateValue.Month(), dateValue.Day(), 23, 59, 59, 999999999, dateValue.Location())
+				itemFilters = append(itemFilters, bson.M{
+					item.Name: bson.M{
+						"$gte": primitive.NewDateTimeFromTime(startDate),
+						"$lte":  primitive.NewDateTimeFromTime(endDate),
+					},
+				})				
 			case "array_object":
 				values := strings.Split(item.Value, ",")
 				for _, value := range values {
@@ -87,6 +104,14 @@ func (filter *FilterRequest) GetFilter() bson.M {
 	if len(andConditions) != 0 {
 		returnFilter["$and"] = andConditions
 	}
+
+	filterJSON, err := json.MarshalIndent(returnFilter, "", "  ")
+    if err != nil {
+        log.Fatalf("Error converting filter to JSON: %v", err)
+    }
+
+    // Print the JSON string
+    fmt.Println("MongoDB Query Filter:", string(filterJSON))
 	
 	return returnFilter
 }
