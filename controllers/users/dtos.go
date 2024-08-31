@@ -13,6 +13,10 @@ type UpdateUserNameRequest struct {
 	UserName 	string `json:"user_name"`	
 }
 
+type UpdateUserBookmarkRequest struct {
+	BookmarkedJobs []string `json:"bookmarked_jobs"`
+}
+
 type UpdateUserRequest struct {
 	Id                   string                      `json:"id"`	
 	FirstName            string                      `json:"first_name"`
@@ -52,6 +56,7 @@ type UserProfileResponse struct {
 	IdiomsInfo           []users.UserIdiomInfo       `json:"idioms_info"`
 	IsPublicForRecruiter bool                        `json:"is_public_for_recruiter"`
 	ProfileImageUrl 	 string			             `json:"profile_image_url"`	
+	BookmarkedJobs 		 []string					 `json:"bookmarked_jobs"`
 }
 
 type ResetPasswordRequest struct {

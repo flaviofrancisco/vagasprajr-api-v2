@@ -450,41 +450,45 @@ func GetJobs(body JobFilter) (PaginatedResult, error) {
 	filter := bson.M{}
 	andConditions := []bson.M{}
 
-	if body.Title != "" {
-		// Split the title by spaces
-		words := strings.Fields(strings.TrimSpace(body.Title))
+	if body.Ids != nil && len(body.Ids) > 0 {
+		filter["_id"] = bson.M{"$in": body.Ids}
+	} else {
+		if body.Title != "" {
+				// Split the title by spaces
+				words := strings.Fields(strings.TrimSpace(body.Title))
 
-		// Create a slice of bson.M to store the conditions
-		conditions := make([]bson.M, len(words))
+				// Create a slice of bson.M to store the conditions
+				conditions := make([]bson.M, len(words))
 
-		// Loop through the words and create a regex condition for each word
-		for i, word := range words {
-			word = commons.HandleValueForRegex(strings.TrimSpace(word))
-			conditions[i] = bson.M{"title": bson.M{"$regex": word, "$options": "i"}}			
-		}
+				// Loop through the words and create a regex condition for each word
+				for i, word := range words {
+					word = commons.HandleValueForRegex(strings.TrimSpace(word))
+					conditions[i] = bson.M{"title": bson.M{"$regex": word, "$options": "i"}}			
+				}
 
-		// Append the conditions to the andConditions slice
-		andConditions = append(andConditions, bson.M{"$and": conditions})
+				// Append the conditions to the andConditions slice
+				andConditions = append(andConditions, bson.M{"$and": conditions})
+			}	
+
+			andConditions = appendCondition(andConditions, "company_name", body.Company)
+			andConditions = appendCondition(andConditions, "location", body.Location)
+			andConditions = appendCondition(andConditions, "salary", body.Salary)
+			andConditions = appendCondition(andConditions, "provider", body.Provider)
+
+			andConditions = appendInCondition(andConditions, "_id", body.Ids)
+			andConditions = appendInCondition(andConditions, "company_name", body.JobFilterOptions.Companies)
+			andConditions = appendInCondition(andConditions, "location", body.JobFilterOptions.Locations)
+			andConditions = appendInCondition(andConditions, "provider", body.JobFilterOptions.Providers)
+			andConditions = appendInCondition(andConditions, "salary", body.JobFilterOptions.Salaries)
+
+			if body.CreatorId != primitive.NilObjectID {
+				andConditions = append(andConditions, bson.M{"creator": body.CreatorId})
+			}	
+
+			if len(andConditions) > 0 {
+				filter["$and"] = andConditions
+			}
 	}	
-
-	andConditions = appendCondition(andConditions, "company_name", body.Company)
-	andConditions = appendCondition(andConditions, "location", body.Location)
-	andConditions = appendCondition(andConditions, "salary", body.Salary)
-	andConditions = appendCondition(andConditions, "provider", body.Provider)
-
-	andConditions = appendInCondition(andConditions, "_id", body.Ids)
-	andConditions = appendInCondition(andConditions, "company_name", body.JobFilterOptions.Companies)
-	andConditions = appendInCondition(andConditions, "location", body.JobFilterOptions.Locations)
-	andConditions = appendInCondition(andConditions, "provider", body.JobFilterOptions.Providers)
-	andConditions = appendInCondition(andConditions, "salary", body.JobFilterOptions.Salaries)
-
-	if body.CreatorId != primitive.NilObjectID {
-		andConditions = append(andConditions, bson.M{"creator": body.CreatorId})
-	}	
-
-	if len(andConditions) > 0 {
-		filter["$and"] = andConditions
-	}
 
 	page := body.Page
 	perPage := body.PageSize

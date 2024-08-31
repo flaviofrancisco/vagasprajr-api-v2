@@ -385,6 +385,7 @@ func GetUser(context *gin.Context) {
 		DiversityInfo: user.DiversityInfo,
 		IdiomsInfo: user.IdiomsInfo,
 		IsPublicForRecruiter: user.IsPublicForRecruiter,
+		BookmarkedJobs: user.BookmarkedJobs,
 	}
 
 	context.JSON(http.StatusOK, response)
@@ -478,6 +479,7 @@ func GetUserProfile(context *gin.Context) {
 		DiversityInfo: user.DiversityInfo,
 		IdiomsInfo: user.IdiomsInfo,
 		IsPublicForRecruiter: user.IsPublicForRecruiter,
+		BookmarkedJobs: user.BookmarkedJobs,
 	}
 
 	context.JSON(http.StatusOK, response)
@@ -684,6 +686,49 @@ func UpdateUser(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response)
+}
+
+func UpdateUserBookmarkedJobs(context *gin.Context) {
+	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+
+	userInfo := currentUser.(users.UserTokenInfo)
+	
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
+		return
+	}
+
+	user, err := users.GetUserById(userInfo.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
+		return
+	}
+
+	var request UpdateUserBookmarkRequest
+	context.BindJSON(&request)
+
+	user.BookmarkedJobs = request.BookmarkedJobs
+	user.UpdateUserBookmarkedJobs()
+
+	user, err = users.GetUserById(userInfo.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, user.BookmarkedJobs)	
 }
 
 func GetUsers(context *gin.Context) {

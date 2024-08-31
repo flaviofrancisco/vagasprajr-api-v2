@@ -381,6 +381,40 @@ func GetUserByUserName(userName string) (User, error) {
 	return result, nil	
 }
 
+func (user *User) UpdateUserBookmarkedJobs() error {
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+	
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{{Key: "_id", Value: user.Id}}
+
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "bookmarked_jobs", Value: user.BookmarkedJobs}}}}
+
+	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetUserById(id primitive.ObjectID) (User, error) {
 	mongodb_database := os.Getenv("MONGODB_DATABASE")
 	client, err := models.Connect()

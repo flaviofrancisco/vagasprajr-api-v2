@@ -28,7 +28,7 @@ func RegisterRoutes(server *gin.Engine) {
 
     server.Use(cors.New(cors.Config{
         AllowOrigins:     allowedOrigins,
-        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
         AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
         ExposeHeaders:    []string{"Content-Length"},
         AllowCredentials: true,
@@ -103,4 +103,5 @@ func RegisterRoutes(server *gin.Engine) {
 	server.GET("/users/profile/:username", users.GetPublicUserProfile)
 	server.PUT("/users/profile", authentication.AuthMiddleware(), users.UpdateUser)
 	server.POST("/users/username", authentication.AuthMiddleware(), users.UpdateUserName)
+	server.PATCH("/users/bookmarks",authentication.AuthMiddleware(), users.UpdateUserBookmarkedJobs)	
 }

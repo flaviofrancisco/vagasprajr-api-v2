@@ -7,6 +7,7 @@ import (
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/jobs"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
+
 	"github.com/gin-gonic/gin"
 )
 
