@@ -404,8 +404,11 @@ func (user *User) UpdateUserBookmarkedJobs() error {
 
 	filter := bson.D{{Key: "_id", Value: user.Id}}
 
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "bookmarked_jobs", Value: user.BookmarkedJobs}}}}
-
+	update := bson.D{
+		{Key: "$set", Value: bson.D{{Key: "bookmarked_jobs", Value: user.BookmarkedJobs}}},
+		{Key: "$set", Value: bson.D{{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())}}},
+	}
+	
 	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
 
 	if err != nil {
