@@ -70,6 +70,7 @@ type UserTalentView struct {
 	LastLogin            primitive.DateTime   `bson:"last_login" json:"last_login"`
 	LastUpdate           primitive.DateTime   `bson:"last_update" json:"last_update"`
 	ProfileImageUrl      string               `bson:"profile_image_url" json:"profile_image_url"`
+	AboutMe              string               `bson:"about_me" json:"about_me"`
 }
 
 type User struct {

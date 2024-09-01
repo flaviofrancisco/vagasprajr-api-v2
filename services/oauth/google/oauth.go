@@ -131,25 +131,25 @@ func OAuthGoogle(context *gin.Context) {
 
 	} else {
 
-		user_google, err := users.GetUserByEmail(googleUserInfo.Email)
+		currentUser, err := users.GetUserByEmail(googleUserInfo.Email)
 
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if (user_google.ProfileImageUrl == "") {
-			user_google.ProfileImageUrl = googleUserInfo.Picture
+		if (currentUser.ProfileImageUrl == "") {
+			currentUser.ProfileImageUrl = googleUserInfo.Picture
 		}		
 
-		err = user_google.UpdateProfilePicture()
+		err = currentUser.UpdateProfilePicture()
 
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if user_google.Email == "" {
+		if currentUser.Email == "" {
 			context.JSON(http.StatusBadRequest, gin.H{"error": "Usuário não encontrado"})
 			return
 		}
