@@ -752,3 +752,18 @@ func GetUsers(context *gin.Context) {
 		
 	context.JSON(http.StatusOK, result)	
 }
+
+func GetTalents(context *gin.Context) {
+	
+	var request commons.FilterRequest
+	context.BindJSON(&request)
+
+	result, err := users.GetTalents(request, false, false)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+		
+	context.JSON(http.StatusOK, result)
+}

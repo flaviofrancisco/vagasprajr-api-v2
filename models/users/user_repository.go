@@ -810,3 +810,90 @@ func( user *User) UpdateUserName() error {
 
 	return nil
 }
+
+func GetTalents(filter commons.FilterRequest, is_admin bool, is_recruiter bool) (UserTalentsPaginatedResult, error) {
+	
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return UserTalentsPaginatedResult{}, err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	page:= filter.Page
+	perPage:= filter.PageSize
+
+	if (page - 1) < 0 {
+		page = 1
+	}
+
+	skip := (page - 1) * perPage
+
+	if filter.Sort == "" {
+		filter.Sort = "created_at"
+	}
+
+	orderDirection := -1
+
+	if filter.IsAscending {
+		orderDirection = 1
+	}
+
+	final_filter := filter.GetFilter()
+	
+	is_public_filter := bson.M {
+		"is_public": true,
+	}
+
+	if is_admin {
+		is_public_filter = bson.M{}
+	}
+
+	if is_recruiter {
+		is_public_filter = bson.M{
+			"$or": []bson.M{
+				{"is_public_for_recruiter": true},
+				{"is_public": true},
+			},
+		}
+	}
+
+	if existingAnd, ok := final_filter["$and"]; ok {
+		final_filter["$and"] = append(existingAnd.([]bson.M),is_public_filter)
+	} else {
+		final_filter["$and"] = []bson.M{
+			is_public_filter,
+		}
+	}
+
+	options := options.Find().SetSort(bson.M{filter.Sort: orderDirection}).SetSkip(int64(skip)).SetLimit(int64(perPage))
+
+	cursor, err := db.Collection("users").Find(context.Background(), final_filter, options)
+
+	if err != nil {
+		return UserTalentsPaginatedResult{}, err
+	}
+
+	var users []UserTalentView
+
+	if err = cursor.All(context.Background(), &users); err != nil {
+		return UserTalentsPaginatedResult{}, err
+	}
+
+	total, err := db.Collection("users").CountDocuments(context.Background(), filter.GetFilter())
+
+	return UserTalentsPaginatedResult{
+		Total:   total,
+		Page:    page,
+		PerPage: perPage,
+		Data:    users,
+	}, nil	
+}

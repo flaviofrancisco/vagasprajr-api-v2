@@ -58,6 +58,18 @@ type UserView struct {
 	LastUpdate           primitive.DateTime   `bson:"last_update" json:"last_update"`
 }
 
+type UserTalentView struct {
+	Id              	 primitive.ObjectID 	  `bson:"_id" json:"id"`
+	FirstName            string               `bson:"first_name" json:"first_name"`
+	LastName             string               `bson:"last_name" json:"last_name"`	
+	UserName             string               `bson:"user_name" json:"user_name"`
+	City                 string               `bson:"city" json:"city"`
+	State                string               `bson:"state" json:"state"`
+	CreatedAt            primitive.DateTime   `bson:"created_at" json:"created_at"`	
+	LastLogin            primitive.DateTime   `bson:"last_login" json:"last_login"`
+	LastUpdate           primitive.DateTime   `bson:"last_update" json:"last_update"`
+}
+
 type User struct {
 	Id                   primitive.ObjectID   `bson:"_id" json:"id"`
 	FirstName            string               `bson:"first_name" json:"first_name"`
@@ -196,4 +208,11 @@ type UsersPaginatedResult struct {
 	Page    int
 	PerPage int
 	Data    []UserView
+}
+
+type UserTalentsPaginatedResult struct {
+	Total   int64 
+	Page    int
+	PerPage int
+	Data    []UserTalentView
 }

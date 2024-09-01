@@ -94,6 +94,9 @@ func RegisterRoutes(server *gin.Engine) {
 	// Singn Up
 	server.POST("/auth/signup", users.SignUp)
 	server.GET("/auth/signup/confirm-email/:token", users.ConfirmEmail)
+
+	//Talents
+	server.POST("/talents", users.GetTalents)
 	
 	// Token
 	server.GET("/auth/refresh-token", users.RefreshToken)
