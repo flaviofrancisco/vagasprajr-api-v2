@@ -387,6 +387,7 @@ func GetUser(context *gin.Context) {
 		IdiomsInfo: user.IdiomsInfo,
 		IsPublicForRecruiter: user.IsPublicForRecruiter,
 		BookmarkedJobs: user.BookmarkedJobs,
+		ProfileImageUrl: user.ProfileImageUrl,
 	}
 
 	context.JSON(http.StatusOK, response)
@@ -431,6 +432,7 @@ func GetPublicUserProfile(context *gin.Context) {
 		Certifications: user.Certifications,				
 		IdiomsInfo: user.IdiomsInfo,
 		IsPublic: user.IsPublic,		
+		ProfileImageUrl: user.ProfileImageUrl,
 	}
 
 	context.JSON(http.StatusOK, response)
@@ -481,6 +483,7 @@ func GetUserProfile(context *gin.Context) {
 		IdiomsInfo: user.IdiomsInfo,
 		IsPublicForRecruiter: user.IsPublicForRecruiter,
 		BookmarkedJobs: user.BookmarkedJobs,
+		ProfileImageUrl: user.ProfileImageUrl,
 	}
 
 	context.JSON(http.StatusOK, response)
