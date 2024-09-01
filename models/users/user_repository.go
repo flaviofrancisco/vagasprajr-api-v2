@@ -774,6 +774,44 @@ func UserNameAlreadyExists(userName string) (bool, error) {
 	return true, nil
 }
 
+func (user *User) UpdateProfilePicture() error {
+	
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{Key: "_id", Value: user.Id}}
+
+	update := bson.D{
+		{
+			Key: "$set", 
+			Value: bson.D{
+				{Key: "profile_image_url", Value: user.ProfileImageUrl},
+				{Key: "last_update", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
+			},
+		},		
+	}
+	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil		
+
+}
+
 func( user *User) UpdateUserName() error {
 	
 	mongodb_database := os.Getenv("MONGODB_DATABASE")

@@ -129,6 +129,7 @@ func Login(context *gin.Context) {
 		LastName: currentUser.LastName,				
 		UserName: currentUser.UserName,
 		Id: currentUser.Id,
+		ProfileImageUrl: currentUser.ProfileImageUrl,
 	}
 	
 	userToken := tokens.UserToken{
@@ -686,6 +687,73 @@ func UpdateUser(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, response)
+}
+
+func UploadProfilePicture(context *gin.Context) {
+	
+	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+
+	userInfo := currentUser.(users.UserTokenInfo)
+	
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
+		return
+	}
+
+	user, err := users.GetUserById(userInfo.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if userInfo.Id != user.Id {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+
+	file, err := context.FormFile("file")
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	fileName := fmt.Sprintf("%s%s", "profile_picture_", file.Filename)
+
+	userIdString := userInfo.Id.Hex()
+
+	err = context.SaveUploadedFile(file, "./uploads/"+ userIdString + "/" + fileName)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"success": true, "profile_picture": fileName, "message": "Foto de perfil atualizada com sucesso"})
+
+	user.ProfileImageUrl = fileName
+
+	err = user.UpdateProfilePicture()
+
+	// if err != nil {
+	// 	context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+
+	// user, err = users.GetUserById(userInfo.Id)
+
+	// if err != nil {
+	// 	context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+
+	// context.JSON(http.StatusOK, gin.H{"success": true, "profile_picture": user.ProfilePicture, "message": "Foto de perfil atualizada com sucesso"})
 }
 
 func UpdateUserBookmarkedJobs(context *gin.Context) {

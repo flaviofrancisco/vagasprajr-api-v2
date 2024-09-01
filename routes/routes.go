@@ -107,4 +107,5 @@ func RegisterRoutes(server *gin.Engine) {
 	server.PUT("/users/profile", authentication.AuthMiddleware(), users.UpdateUser)
 	server.POST("/users/username", authentication.AuthMiddleware(), users.UpdateUserName)
 	server.PATCH("/users/bookmarks",authentication.AuthMiddleware(), users.UpdateUserBookmarkedJobs)	
+	server.POST("/users/profile-picture", authentication.AuthMiddleware(), users.UploadProfilePicture)	
 }

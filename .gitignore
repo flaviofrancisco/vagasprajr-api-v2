@@ -31,3 +31,4 @@ go.work
 
 redis/redis.conf
 __debug_bin*
+uploads/*

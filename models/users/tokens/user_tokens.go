@@ -74,12 +74,13 @@ func (userToken *UserToken) SetAuthenticationToken(userInfo users.UserTokenInfo,
 	key = []byte(os.Getenv("JWT_SECRET"))
 		
 	t = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":         userInfo.Id,
-		"first_name": userInfo.FirstName,
-		"last_name":  userInfo.LastName,
-		"user_name":  userInfo.UserName,
-		"email":      userInfo.Email,		
-		"exp":        expirationDateTime.Unix(),
+		"id":         			userInfo.Id,
+		"first_name": 			userInfo.FirstName,
+		"last_name":  			userInfo.LastName,
+		"user_name":  			userInfo.UserName,
+		"email":      			userInfo.Email,
+		"profile_image_url": 	userInfo.ProfileImageUrl,		
+		"exp":        			expirationDateTime.Unix(),
 	})
 
 	userToken.ExpirationDate = primitive.NewDateTimeFromTime(expirationDateTime)
@@ -211,10 +212,11 @@ func GetUserInfoFromContext(context *gin.Context) (users.UserTokenInfo, error) {
 func GetUserInfo(jwtClaims jwt.MapClaims) (users.UserTokenInfo, error) {
 
 	userInfo := users.UserTokenInfo{
-		FirstName: jwtClaims["first_name"].(string),
-		LastName:  jwtClaims["last_name"].(string),
-		Email:     jwtClaims["email"].(string),
-		UserName:  jwtClaims["user_name"].(string),			
+		FirstName: 			jwtClaims["first_name"].(string),
+		LastName:  			jwtClaims["last_name"].(string),
+		Email:     			jwtClaims["email"].(string),
+		UserName:  			jwtClaims["user_name"].(string),		
+		ProfileImageUrl: 	jwtClaims["profile_image_url"].(string),	
 	}
 
     idStr, ok := jwtClaims["id"].(string)

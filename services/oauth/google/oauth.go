@@ -98,6 +98,7 @@ func OAuthGoogle(context *gin.Context) {
 			Email:     new_google_user.Email,
 			FirstName: new_google_user.GivenName,
 			LastName:  new_google_user.FamilyName,
+			ProfileImageUrl: new_google_user.Picture,
 		}
 
 		err = users.CreateUser(new_user)
@@ -137,6 +138,17 @@ func OAuthGoogle(context *gin.Context) {
 			return
 		}
 
+		if (user_google.ProfileImageUrl == "") {
+			user_google.ProfileImageUrl = googleUserInfo.Picture
+		}		
+
+		err = user_google.UpdateProfilePicture()
+
+		if err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		if user_google.Email == "" {
 			context.JSON(http.StatusBadRequest, gin.H{"error": "Usuário não encontrado"})
 			return
@@ -158,6 +170,7 @@ func OAuthGoogle(context *gin.Context) {
 		FirstName: currentUser.FirstName,
 		LastName: currentUser.LastName,				
 		UserName: currentUser.UserName,
+		ProfileImageUrl: currentUser.ProfileImageUrl,
 		Id: currentUser.Id,
 	}
 		

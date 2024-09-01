@@ -22,6 +22,7 @@ type UserTokenInfo struct {
 	LastName        	string            		`bson:"last_name" json:"last_name"`
 	Email           	string            		`bson:"email" json:"email"`	
 	UserName        	string            		`bson:"user_name" json:"user_name"`
+	ProfileImageUrl 	string            		`bson:"profile_image_url" json:"profile_image_url"`
 }
 
 type UserInfo struct {
@@ -68,6 +69,7 @@ type UserTalentView struct {
 	CreatedAt            primitive.DateTime   `bson:"created_at" json:"created_at"`	
 	LastLogin            primitive.DateTime   `bson:"last_login" json:"last_login"`
 	LastUpdate           primitive.DateTime   `bson:"last_update" json:"last_update"`
+	ProfileImageUrl      string               `bson:"profile_image_url" json:"profile_image_url"`
 }
 
 type User struct {
@@ -104,6 +106,7 @@ type User struct {
 	JobPreference        UserJobPreference    `bson:"job_preferences" json:"job_preferences"`
 	DiversityInfo        UserDiversityInfo    `bson:"diversity_info" json:"diversity_info"`
 	IdiomsInfo           []UserIdiomInfo      `bson:"idioms_info" json:"idioms_info"`
+	ProfileImageUrl      string               `bson:"profile_image_url" json:"profile_image_url"`
 }
 
 type UserTechExperience struct {
