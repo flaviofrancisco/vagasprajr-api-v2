@@ -926,7 +926,7 @@ func GetTalents(filter commons.FilterRequest, is_admin bool, is_recruiter bool) 
 		return UserTalentsPaginatedResult{}, err
 	}
 
-	total, err := db.Collection("users").CountDocuments(context.Background(), filter.GetFilter())
+	total, err := db.Collection("users").CountDocuments(context.Background(), final_filter)
 
 	return UserTalentsPaginatedResult{
 		Total:   total,
