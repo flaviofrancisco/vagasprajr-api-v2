@@ -716,6 +716,8 @@ func (user *User) Update() error {
 				{Key: "educations", Value: user.Educations},
 				{Key: "experiences", Value: user.Experiences},
 				{Key: "is_public", Value: user.IsPublic},
+				{Key: "profile_image_url", Value: user.ProfileImageUrl},
+				{Key: "oauth_image_url", Value: user.OAuthImageURL},
 			},
 		},		
 	}

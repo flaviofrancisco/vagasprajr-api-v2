@@ -108,6 +108,8 @@ type User struct {
 	DiversityInfo        UserDiversityInfo    `bson:"diversity_info" json:"diversity_info"`
 	IdiomsInfo           []UserIdiomInfo      `bson:"idioms_info" json:"idioms_info"`
 	ProfileImageUrl      string               `bson:"profile_image_url" json:"profile_image_url"`
+	OAuthImageURL        string               `bson:"oauth_image_url" json:"oauth_image_url"`
+	GravatarImageUrl     string               `bson:"gravatar_image_url" json:"gravatar_image_url"`
 }
 
 type UserTechExperience struct {

@@ -31,6 +31,8 @@ type UpdateUserRequest struct {
 	Certifications	   	 []users.UserCertification   `json:"certifications"`
 	Educations		   	 []users.UserEducation       `json:"educations"`
 	IsPublic 		   	 bool                        `json:"is_public"`
+	ProfileImageUrl		 string					 	 `json:"profile_image_url"`
+	OAuthImageURL        string              		 `json:"oauth_image_url"`	
 }
 
 type UserProfileResponse struct {
@@ -57,6 +59,8 @@ type UserProfileResponse struct {
 	IsPublicForRecruiter bool                        `json:"is_public_for_recruiter"`
 	ProfileImageUrl 	 string			             `json:"profile_image_url"`	
 	BookmarkedJobs 		 []string					 `json:"bookmarked_jobs"`
+	OAuthImageURL		 string					 	 `json:"oauth_image_url"`
+	GravatarImageUrl     string                      `json:"gravatar_image_url"`
 }
 
 type ResetPasswordRequest struct {
@@ -70,4 +74,8 @@ type VerifyResestTokenRequest struct {
 type ResetPasswordRequestBody struct {
 	Token    string `json:"token"`
 	Password string `json:"password"`
+}
+
+type GravatarRequest struct {
+	Email string `json:"email"`
 }

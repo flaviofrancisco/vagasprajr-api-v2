@@ -102,6 +102,7 @@ func RegisterRoutes(server *gin.Engine) {
 	server.GET("/auth/refresh-token", users.RefreshToken)
 
 	// Users	
+	server.POST("/user/gravatar", users.GetGravatarUrl)
 	server.GET("/users/profile", authentication.AuthMiddleware(), users.GetUserProfile)
 	server.GET("/users/profile/:username", users.GetPublicUserProfile)
 	server.PUT("/users/profile", authentication.AuthMiddleware(), users.UpdateUser)

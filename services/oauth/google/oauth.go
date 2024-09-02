@@ -99,6 +99,7 @@ func OAuthGoogle(context *gin.Context) {
 			FirstName: new_google_user.GivenName,
 			LastName:  new_google_user.FamilyName,
 			ProfileImageUrl: new_google_user.Picture,
+			OAuthImageURL: new_google_user.Picture,
 		}
 
 		err = users.CreateUser(new_user)
@@ -140,9 +141,11 @@ func OAuthGoogle(context *gin.Context) {
 
 		if (currentUser.ProfileImageUrl == "") {
 			currentUser.ProfileImageUrl = googleUserInfo.Picture
-		}		
+		}
+		
+		currentUser.OAuthImageURL = googleUserInfo.Picture
 
-		err = currentUser.UpdateProfilePicture()
+		err = currentUser.Update()
 
 		if err != nil {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

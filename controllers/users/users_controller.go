@@ -9,6 +9,7 @@ import (
 
 	"github.com/flaviofrancisco/vagasprajr-api-v2/middlewares"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/commons"
+	"github.com/flaviofrancisco/vagasprajr-api-v2/models/gravatar"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/models/users/tokens"
 	"github.com/flaviofrancisco/vagasprajr-api-v2/services/emails"
@@ -388,6 +389,8 @@ func GetUser(context *gin.Context) {
 		IsPublicForRecruiter: user.IsPublicForRecruiter,
 		BookmarkedJobs: user.BookmarkedJobs,
 		ProfileImageUrl: user.ProfileImageUrl,
+		OAuthImageURL: user.OAuthImageURL,
+		GravatarImageUrl: user.GravatarImageUrl,
 	}
 
 	context.JSON(http.StatusOK, response)
@@ -484,6 +487,8 @@ func GetUserProfile(context *gin.Context) {
 		IsPublicForRecruiter: user.IsPublicForRecruiter,
 		BookmarkedJobs: user.BookmarkedJobs,
 		ProfileImageUrl: user.ProfileImageUrl,
+		OAuthImageURL: user.OAuthImageURL,
+		GravatarImageUrl: user.GravatarImageUrl,
 	}
 
 	context.JSON(http.StatusOK, response)
@@ -650,6 +655,8 @@ func UpdateUser(context *gin.Context) {
 	user.Certifications = request.Certifications
 	user.Educations = request.Educations
 	user.IsPublic = request.IsPublic
+	user.ProfileImageUrl = request.ProfileImageUrl
+	user.OAuthImageURL = request.OAuthImageURL
 		
 	err = user.Update()
 
@@ -837,4 +844,19 @@ func GetTalents(context *gin.Context) {
 	}
 		
 	context.JSON(http.StatusOK, result)
+}
+
+func GetGravatarUrl(context *gin.Context) {
+	
+	var request GravatarRequest
+	context.BindJSON(&request)
+
+	if request.Email == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "E-mail não informado"})
+		return
+	}
+
+	gravatar := gravatar.NewGravatarFromEmail(request.Email)
+
+	context.JSON(http.StatusOK, gin.H{"gravatarUrl": gravatar.GetURL()})
 }
