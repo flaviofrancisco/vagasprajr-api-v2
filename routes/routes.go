@@ -50,6 +50,7 @@ func RegisterRoutes(server *gin.Engine) {
 	// Admin Users
 	admin.POST("/users", users.GetUsers)
 	admin.GET("/users/:id", users.GetUser)
+	admin.DELETE("/users/:id", users.DeleteUserAsAdmin)
 
 	//Admin Jobs
 	admin.POST("/jobs", jobs.GetJobsAsAdmin)

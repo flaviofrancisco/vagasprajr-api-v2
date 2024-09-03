@@ -441,6 +441,39 @@ func GetPublicUserProfile(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func DeleteUserAsAdmin(context *gin.Context) {
+	
+	userRole := context.MustGet("userRole").(string)
+
+	if userRole != "admin" {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autorizado"})
+		return
+	}
+
+	userId := context.Param("id")
+
+	if userId == "" {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Id do usuário não informado"})
+		return
+	}
+
+	objectId, err := primitive.ObjectIDFromHex(userId)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Id do usuário inválido"})
+		return
+	}
+
+	err = users.DeleteUser(objectId)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"success": true})
+}
+
 func DeleteUser(context *gin.Context) {
 	
 	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)
