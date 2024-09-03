@@ -131,6 +131,7 @@ func Login(context *gin.Context) {
 		UserName: currentUser.UserName,
 		Id: currentUser.Id,
 		ProfileImageUrl: currentUser.ProfileImageUrl,
+		Roles: currentUser.Roles,
 	}
 	
 	userToken := tokens.UserToken{

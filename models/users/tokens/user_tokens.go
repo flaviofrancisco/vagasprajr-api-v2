@@ -72,6 +72,10 @@ func (userToken *UserToken) SetAuthenticationToken(userInfo users.UserTokenInfo,
 	)
 
 	key = []byte(os.Getenv("JWT_SECRET"))
+
+	if userInfo.Roles == nil {
+		userInfo.Roles = []primitive.ObjectID{}
+	}
 		
 	t = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":         			userInfo.Id,
@@ -79,7 +83,8 @@ func (userToken *UserToken) SetAuthenticationToken(userInfo users.UserTokenInfo,
 		"last_name":  			userInfo.LastName,
 		"user_name":  			userInfo.UserName,
 		"email":      			userInfo.Email,
-		"profile_image_url": 	userInfo.ProfileImageUrl,		
+		"profile_image_url": 	userInfo.ProfileImageUrl,
+		"roles":     			userInfo.Roles,		
 		"exp":        			expirationDateTime.Unix(),
 	})
 
@@ -211,12 +216,26 @@ func GetUserInfoFromContext(context *gin.Context) (users.UserTokenInfo, error) {
 
 func GetUserInfo(jwtClaims jwt.MapClaims) (users.UserTokenInfo, error) {
 
+	if jwtClaims["roles"] == nil {
+		jwtClaims["roles"] = []string{}
+	}
+
+	rolesObjectID := []primitive.ObjectID{}
+
+	for _, role := range jwtClaims["roles"].([]interface{}) {
+		roleObjectID, err := primitive.ObjectIDFromHex(role.(string))
+		if err != nil {
+			return users.UserTokenInfo{}, errors.New(`{"error": "Invalid ObjectID"}`)
+		}
+		rolesObjectID = append(rolesObjectID, roleObjectID)
+	}
 	userInfo := users.UserTokenInfo{
 		FirstName: 			jwtClaims["first_name"].(string),
 		LastName:  			jwtClaims["last_name"].(string),
 		Email:     			jwtClaims["email"].(string),
 		UserName:  			jwtClaims["user_name"].(string),		
-		ProfileImageUrl: 	jwtClaims["profile_image_url"].(string),	
+		ProfileImageUrl: 	jwtClaims["profile_image_url"].(string),
+		Roles:    			rolesObjectID,
 	}
 
     idStr, ok := jwtClaims["id"].(string)

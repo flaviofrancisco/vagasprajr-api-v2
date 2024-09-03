@@ -23,6 +23,7 @@ type UserTokenInfo struct {
 	Email           	string            		`bson:"email" json:"email"`	
 	UserName        	string            		`bson:"user_name" json:"user_name"`
 	ProfileImageUrl 	string            		`bson:"profile_image_url" json:"profile_image_url"`
+	Roles		   		[]primitive.ObjectID 	`bson:"roles" json:"roles"`
 }
 
 type UserInfo struct {

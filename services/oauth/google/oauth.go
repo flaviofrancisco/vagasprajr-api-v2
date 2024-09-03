@@ -175,6 +175,7 @@ func OAuthGoogle(context *gin.Context) {
 		UserName: currentUser.UserName,
 		ProfileImageUrl: currentUser.ProfileImageUrl,
 		Id: currentUser.Id,
+		Roles: currentUser.Roles,
 	}
 		
 	userToken := tokens.UserToken{
