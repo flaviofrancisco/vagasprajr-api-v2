@@ -441,6 +441,39 @@ func GetPublicUserProfile(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func DeleteUser(context *gin.Context) {
+	
+	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)
+
+	if !context_error {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao recuperar informações do usuário conectado"})
+		return
+	}
+
+	userInfo := currentUser.(users.UserTokenInfo)
+
+	if userInfo.Id.IsZero() {
+		context.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário não autenticado"})
+		return
+	}
+
+	user, err := users.GetUserById(userInfo.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = users.DeleteUser(user.Id)
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"success": true})
+}
+
 func GetUserProfile(context *gin.Context) {
 	
 	currentUser, context_error := context.Get(middlewares.USER_TOKEN_INFO)	

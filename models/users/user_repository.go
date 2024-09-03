@@ -134,7 +134,10 @@ func (user *User) IsAuthenticated() (bool, error) {
 	db := client.Database(mongodb_database)
 
 	// Check if a user with the given email exists
-	filter := bson.D{{Key: "email", Value: strings.ToLower(user.Email)}}
+	filter := bson.D{
+		{Key: "email", Value: strings.ToLower(user.Email)},
+		{Key: "is_deleted", Value: false},
+	}
 	var result User
 	err = db.Collection("users").FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
@@ -410,6 +413,42 @@ func (user *User) UpdateUserBookmarkedJobs() error {
 	}
 	
 	_, err = db.Collection("users").UpdateOne(context.Background(), filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteUser(id primitive.ObjectID) error {
+	
+	mongodb_database := os.Getenv("MONGODB_DATABASE")
+	client, err := models.Connect()
+
+	if err != nil {
+		return err
+	}
+
+	// Ensure the client connection is closed once the function completes
+	defer func() {
+		if err = client.Disconnect(context.Background()); err != nil {
+			panic(err)
+		}
+	}()
+
+	db := client.Database(mongodb_database)
+
+	filter := bson.D{{Key: "_id", Value: id}}	
+
+	_, err = db.Collection("users").DeleteOne(context.Background(), filter)
+
+	if err != nil {
+		return err
+	}
+
+	filter = bson.D{{Key: "user_id", Value: id}}
+	_, err = db.Collection("users_tokens").DeleteMany(context.Background(), filter)
 
 	if err != nil {
 		return err
