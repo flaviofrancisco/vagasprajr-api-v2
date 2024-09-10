@@ -23,7 +23,7 @@ func Connect() (*mongo.Client, error) {
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.Background(), clientOptions)
     if err != nil {
-        log.Fatal(err)
+        return nil, err
     }
 
 	// Check the connection

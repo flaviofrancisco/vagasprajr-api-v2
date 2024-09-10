@@ -544,16 +544,16 @@ func GetOriginalURL(shortUrl string) (string, error) {
 
 	client, err := models.Connect()
 
+	if err != nil {
+		return "", err
+	}
+
 	// Ensure the client connection is closed once the function completes
 	defer func() {
 		if err = client.Disconnect(context.Background()); err != nil {
 			panic(err)
 		}
 	}()
-
-	if err != nil {
-		return "", err
-	}
 
 	collection := client.Database(mongodb_database).Collection("jobs")
 
